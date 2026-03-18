@@ -41,11 +41,10 @@ The project aims to answer several research questions related to the relationshi
 
 1. **Which market indicators have the strongest relationship with cryptocurrency price changes?**
 
-2. **Can historical market indicators be used to predict short-term cryptocurrency price movements?**
+2. **How accurately can historical market indicators from day (t-1) predict the direction of cryptocurrency price movement (increase or decrease) on day (t), as measured by accuracy?**
 
-3. **How accurately can machine learning models predict the next-day price movement of major cryptocurrencies such as Bitcoin or Ethereum?**
+3. **Which machine learning model achieves the highest accuracy in predicting the direction of cryptocurrency price movement on day t based on historical market indicators from day t-1?**
 
-An additional exploratory question is whether unusual changes in trading volume can signal upcoming price movements.
 
 ## 3. Data Sources
 
