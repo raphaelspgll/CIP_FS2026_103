@@ -11,7 +11,8 @@ def engineer(df: pd.DataFrame) -> pd.DataFrame:
     df = df.copy()
     df = df.sort_values(["coin_id", "date"]).reset_index(drop=True)
 
-    def _compute(group):
+    groups = []
+    for _, group in df.groupby("coin_id"):
         g = group.copy()
 
         # Step 1: compute raw features and target
@@ -21,23 +22,22 @@ def engineer(df: pd.DataFrame) -> pd.DataFrame:
         g["volatility_7"]    = g["daily_return"].rolling(7).std()
         g["vol_change"]      = g["volume_24h_usd"] / g["volume_24h_usd"].shift(1) - 1
 
-        # Target: direction of price on day t (not lagged)
+        # Target: direction of price on day t (not lagged).
+        # .where() guard is required: (NaN > 0).astype(float) returns 0.0,
+        # which would falsely label the first row as "no upward movement".
         g["price_direction"] = (g["daily_return"] > 0).astype(float)
         g["price_direction"] = g["price_direction"].where(g["daily_return"].notna())
 
         # Step 2: lag only the feature columns, never the target
         g[FEATURE_COLS] = g[FEATURE_COLS].shift(1)
 
-        return g
+        groups.append(g)
 
-    return (
-        df.groupby("coin_id", group_keys=False)
-        .apply(_compute)
-        .reset_index(drop=True)
-    )
+    return pd.concat(groups, ignore_index=True) if groups else df.iloc[0:0]
 
 
 def main():
+    os.makedirs(PROCESSED_DIR, exist_ok=True)
     for path in glob.glob(os.path.join(PROCESSED_DIR, "*_cleaned.csv")):
         coin_id = os.path.basename(path).replace("_cleaned.csv", "")
         df = pd.read_csv(path, parse_dates=["date"])
