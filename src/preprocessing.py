@@ -19,7 +19,7 @@ def clean(df: pd.DataFrame) -> pd.DataFrame:
 
     # 2. Dedup: keep latest scraped_at per (coin_id, date)
     df = (
-        df.sort_values("scraped_at")
+        df.sort_values(["coin_id", "date", "scraped_at"])
         .drop_duplicates(subset=["coin_id", "date"], keep="last")
         .reset_index(drop=True)
     )
@@ -44,7 +44,7 @@ def clean(df: pd.DataFrame) -> pd.DataFrame:
     )
 
     # 4. Flag outliers (for human inspection; do not drop)
-    df["is_outlier"] = df["price_change_pct"].abs() > 50
+    df["is_outlier"] = df["price_change_pct"].abs().gt(50).fillna(False)
 
     # 5. Sort
     df = df.sort_values(["coin_id", "date"]).reset_index(drop=True)
@@ -55,12 +55,16 @@ def clean(df: pd.DataFrame) -> pd.DataFrame:
 def main():
     os.makedirs(PROCESSED_DIR, exist_ok=True)
     for path in glob.glob(os.path.join(RAW_DIR, "*.csv")):
-        coin_id = os.path.splitext(os.path.basename(path))[0]
-        df = pd.read_csv(path)
-        cleaned = clean(df)
-        out_path = os.path.join(PROCESSED_DIR, f"{coin_id}_cleaned.csv")
-        cleaned.to_csv(out_path, index=False)
-        print(f"[{coin_id}] {len(cleaned)} rows → {out_path}")
+        try:
+            df = pd.read_csv(path)
+            cleaned = clean(df)
+        except Exception as e:
+            print(f"[{path}] ERROR: {e} — skipping")
+            continue
+        for coin_id, group in cleaned.groupby("coin_id"):
+            out_path = os.path.join(PROCESSED_DIR, f"{coin_id}_cleaned.csv")
+            group.to_csv(out_path, index=False)
+            print(f"[{coin_id}] {len(group)} rows → {out_path}")
 
 
 if __name__ == "__main__":

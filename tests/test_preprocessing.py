@@ -79,6 +79,15 @@ def test_flags_outliers_above_50_pct():
     assert result[mask2]["is_outlier"].iloc[0] == False
 
 
+def test_forward_fills_volume_and_sets_imputed_flag():
+    df = base_df()
+    df.loc[1, "volume_24h_usd"] = np.nan
+    result = clean(df)
+    mask = result["date"].astype(str) == "2024-01-02"
+    assert result[mask]["volume_24h_usd"].iloc[0] == 2e10
+    assert result[mask]["volume_24h_usd_imputed"].iloc[0] == True
+
+
 def test_sorted_by_coin_id_and_date():
     df = base_df().iloc[::-1].reset_index(drop=True)
     result = clean(df)
