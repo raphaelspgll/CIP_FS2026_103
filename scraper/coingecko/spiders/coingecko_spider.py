@@ -78,6 +78,8 @@ class CoinGeckoSpider(scrapy.Spider):
             volume_24h_usd = parse_price(cells[2].css("::text").get(""))
             open_price     = parse_price(cells[3].css("::text").get(""))
 
+            # Note: this is open-to-close (same day). preprocessing.py fills missing values
+            # using close-to-close (previous day). The field is not used in modeling.
             if price_usd is not None and open_price is not None and open_price != 0.0:
                 price_change_pct = round((price_usd - open_price) / open_price * 100, 4)
             else:

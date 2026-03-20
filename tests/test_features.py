@@ -38,10 +38,11 @@ def test_price_direction_is_not_lagged():
 def test_feature_columns_are_lagged_by_one():
     df = base_df(n=10)
     result = engineer(df)
-    # Row index 1 should have NaN for all lagged feature columns
-    # (because shift(1) moves row 0's values to row 1, but row 0 itself was NaN for daily_return)
+    # daily_return at row 1 is NaN because lag moves row 0's NaN (no prior price) to row 1.
     assert pd.isna(result["daily_return"].iloc[1])
-    assert pd.isna(result["ma_7"].iloc[1])
+    # vol_change at row 1 is NaN because lag moves row 0's NaN (no prior volume) to row 1.
+    # (Unlike ma_7 which is NaN at row 1 regardless of lag due to rolling window size.)
+    assert pd.isna(result["vol_change"].iloc[1])
 
 
 def test_ma7_window():
