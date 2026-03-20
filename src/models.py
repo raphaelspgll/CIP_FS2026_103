@@ -5,8 +5,9 @@ from sklearn.linear_model import LogisticRegression, LinearRegression
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 
+from features import FEATURE_COLS  # single source of truth for feature column names
+
 PROCESSED_DIR = os.path.join(os.path.dirname(__file__), "..", "data", "processed")
-FEATURE_COLS = ["daily_return", "ma_7", "ma_30", "volatility_7", "vol_change"]
 TARGET_COL = "price_direction"
 
 
