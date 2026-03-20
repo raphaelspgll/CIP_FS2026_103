@@ -40,15 +40,16 @@ class CsvExportPipeline:
         for coin_id, fh in self.file_handles.items():
             fh.close()
             path = os.path.join(self.raw_dir, f"{coin_id}.csv")
-            self._dedup(path)
-            spider.logger.info(
-                f"[{coin_id}] Wrote {self.rows_per_coin[coin_id]} rows (after dedup)"
-            )
+            try:
+                count = self._dedup(path)
+                spider.logger.info(f"[{coin_id}] Wrote {count} rows (after dedup)")
+            except Exception as e:
+                spider.logger.info(f"[{coin_id}] Dedup failed: {e}")
 
     def _dedup(self, path):
         df = pd.read_csv(path)
-        df = (
-            df.sort_values("scraped_at")
-            .drop_duplicates(subset=["coin_id", "date"], keep="last")
+        df = df.sort_values("scraped_at").drop_duplicates(
+            subset=["coin_id", "date"], keep="last"
         )
-        df.to_csv(path, index=False)
+        df[FIELDS].to_csv(path, index=False)
+        return len(df)

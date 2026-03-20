@@ -66,3 +66,21 @@ def test_separate_csv_per_coin(pipeline):
     p.close_spider(FakeSpider())
     assert (tmp_path / "bitcoin.csv").exists()
     assert (tmp_path / "ripple.csv").exists()
+
+
+def test_header_written_only_once_on_append(pipeline):
+    p, tmp_path = pipeline
+    # First run: create file
+    p.process_item(make_item("bitcoin", "2024-01-01", "2024-01-01T10:00:00Z"), FakeSpider())
+    p.close_spider(FakeSpider())
+
+    # Second run: append to existing file
+    p2 = CsvExportPipeline()
+    p2.raw_dir = str(tmp_path)
+    p2.process_item(make_item("bitcoin", "2024-01-02", "2024-01-02T10:00:00Z"), FakeSpider())
+    p2.close_spider(FakeSpider())
+
+    rows = list(csv.DictReader((tmp_path / "bitcoin.csv").open()))
+    assert len(rows) == 2  # 2 data rows, not 3 (which would happen if header was duplicated)
+    assert rows[0]["date"] == "2024-01-01"
+    assert rows[1]["date"] == "2024-01-02"
