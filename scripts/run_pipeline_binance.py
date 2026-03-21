@@ -3,6 +3,7 @@ from src.acquisition.binance.endpoints import (
     get_yesterday_date_string,
 )
 from src.acquisition.binance.parser import klines_to_dataframe
+from src.acquisition.binance.save_raw import save_dataframe_to_csv
 
 
 if __name__ == "__main__":
@@ -25,3 +26,8 @@ if __name__ == "__main__":
     print(df.head())
     print("\nDtypes:")
     print(df.dtypes)
+
+    save_dataframe_to_csv(
+        df,
+        "data/raw/binance/btcusdt_1d.csv"
+    )
