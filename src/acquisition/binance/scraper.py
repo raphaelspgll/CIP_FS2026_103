@@ -8,6 +8,9 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException
 
 
+DOCS_URL = "https://developers.binance.com/docs/binance-spot-api-docs/rest-api/market-data-endpoints"
+
+
 def build_driver() -> webdriver.Chrome:
     options = Options()
     options.add_argument("--start-maximized")
@@ -15,7 +18,6 @@ def build_driver() -> webdriver.Chrome:
 
 
 def handle_cookie_popup(driver: webdriver.Chrome) -> None:
-    # --- Define button groups ---
     reject_xpaths = [
         "//button[contains(., 'Reject Additional Cookies')]",
         "//button[contains(., 'Reject All')]",
@@ -30,12 +32,11 @@ def handle_cookie_popup(driver: webdriver.Chrome) -> None:
         "//button[contains(., 'Allow all')]",
     ]
 
-    # --- Combine: reject first, then accept ---
     possible_xpaths = reject_xpaths + accept_xpaths
 
     for xpath in possible_xpaths:
         try:
-            button = WebDriverWait(driver, 10).until(
+            button = WebDriverWait(driver, 5).until(
                 EC.element_to_be_clickable((By.XPATH, xpath))
             )
 
@@ -54,23 +55,32 @@ def handle_cookie_popup(driver: webdriver.Chrome) -> None:
     print("No cookie popup handled.")
 
 
-def open_binance_homepage() -> str:
+def open_kline_docs_page() -> str:
     driver = build_driver()
 
     try:
-        driver.get("https://www.binance.com/en")
+        driver.get(DOCS_URL)
 
         WebDriverWait(driver, 15).until(
             EC.presence_of_element_located((By.TAG_NAME, "body"))
         )
 
         handle_cookie_popup(driver)
+        time.sleep(2)
 
-        time.sleep(3)
+        body = driver.find_element(By.TAG_NAME, "body").text
 
         print("Page title:", driver.title)
         print("Current URL:", driver.current_url)
-        print("Body text length:", len(driver.find_element(By.TAG_NAME, "body").text))
+        print("Body text length:", len(body))
+
+        if "Kline/Candlestick data" in body:
+            print("\nSUCCESS: Found 'Kline/Candlestick data' on the page.\n")
+        else:
+            print("\nWARNING: 'Kline/Candlestick data' not found.\n")
+
+        print("----- PAGE PREVIEW -----")
+        print(body[:1500])
 
         return driver.page_source
 
@@ -79,5 +89,5 @@ def open_binance_homepage() -> str:
 
 
 if __name__ == "__main__":
-    html = open_binance_homepage()
-    print("HTML length:", len(html))
+    html = open_kline_docs_page()
+    print("\nHTML length:", len(html))
