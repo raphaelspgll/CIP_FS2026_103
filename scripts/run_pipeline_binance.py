@@ -1,4 +1,4 @@
-from src.acquisition.binance.scraper import open_kline_docs_page
+from src.acquisition.binance.client import open_kline_docs_page
 
 
 if __name__ == "__main__":
