@@ -32,5 +32,5 @@ if __name__ == "__main__":
         print("First date:", df["open_time"].min())
         print("Last date:", df["open_time"].max())
 
-        output_path = f"data/raw/binance/{symbol.lower()}_{INTERVAL}.csv"
+        output_path = f"../data/raw/binance/{symbol.lower()}_{INTERVAL}.csv"
         save_dataframe_to_csv(df, output_path)
