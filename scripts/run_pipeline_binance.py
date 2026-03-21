@@ -1,6 +1,9 @@
-from src.acquisition.binance.client import open_kline_docs_page
+from src.acquisition.binance.endpoints import get_klines
 
 
 if __name__ == "__main__":
-    html = open_kline_docs_page()
-    print("Downloaded HTML length:", len(html))
+    data = get_klines(symbol="BTCUSDT", interval="1d", limit=5)
+
+    print("Number of rows:", len(data))
+    print("\nFirst row:")
+    print(data[0])
