@@ -294,9 +294,9 @@ The correlation heatmap displays the **Pearson correlation coefficient** (r) bet
 
 **Figures 6–8 (`corr_heatmap_bitcoin.png`, `corr_heatmap_xrp.png`, `corr_heatmap_icp.png`): Feature Correlation Matrices**
 
-![Feature Correlation Matrix – Bitcoin](../images/corr_heatmap_bitcoin.png)
-![Feature Correlation Matrix – XRP](../images/corr_heatmap_xrp.png)
-![Feature Correlation Matrix – ICP](../images/corr_heatmap_icp.png)
+![Feature Correlation Matrix Bitcoin](../images/corr_heatmap_bitcoin.png)
+![Feature Correlation Matrix XRP](../images/corr_heatmap_xrp.png)
+![Feature Correlation Matrix ICP](../images/corr_heatmap_icp.png)
 
 Each of Figures 6, 7, and 8 shows an 11×11 grid (10 features + 1 target variable). Each cell is colour-coded: red = strong positive correlation, blue = strong negative correlation, white = near-zero correlation. The numerical value of r is printed in each cell.
 
@@ -349,9 +349,9 @@ The correlation method used is **Pearson correlation**, which is mathematically 
 
 **Figures 9–11 (`lag1_correlation_bitcoin.png`, `lag1_correlation_xrp.png`, `lag1_correlation_icp.png`): Lag-1 Correlation Bar Charts**
 
-![Lag-1 Correlation – Bitcoin](../images/lag1_correlation_bitcoin.png)
-![Lag-1 Correlation – XRP](../images/lag1_correlation_xrp.png)
-![Lag-1 Correlation – ICP](../images/lag1_correlation_icp.png)
+![Lag-1 Correlation Bitcoin](../images/lag1_correlation_bitcoin.png)
+![Lag-1 Correlation XRP](../images/lag1_correlation_xrp.png)
+![Lag-1 Correlation ICP](../images/lag1_correlation_icp.png)
 
 Each of Figures 9, 10, and 11 shows a horizontal bar chart with one bar per stationary feature. Green bars indicate positive correlations; red bars indicate negative correlations. The features are ranked by absolute correlation strength (strongest at the top).
 
@@ -363,9 +363,9 @@ This indicates that the strongest available predictor for Bitcoin and XRP is whe
 
 **Figures 12–14 (`scatter_top_indicators_bitcoin.png`, `scatter_top_indicators_xrp.png`, `scatter_top_indicators_icp.png`): Scatter Plots with Regression Lines**
 
-![Top Indicator Scatter – Bitcoin](../images/scatter_top_indicators_bitcoin.png)
-![Top Indicator Scatter – XRP](../images/scatter_top_indicators_xrp.png)
-![Top Indicator Scatter – ICP](../images/scatter_top_indicators_icp.png)
+![Top Indicator Scatter Bitcoin](../images/scatter_top_indicators_bitcoin.png)
+![Top Indicator Scatter XRP](../images/scatter_top_indicators_xrp.png)
+![Top Indicator Scatter ICP](../images/scatter_top_indicators_icp.png)
 
 For each cryptocurrency, Figure 12–14 shows scatter plots of the three strongest lag-1 predictors (horizontal axis) against the next-day log return (vertical axis). Each dot represents one trading day. A linear regression line (black) is overlaid to visualise the direction and slope of the relationship.
 
@@ -444,9 +444,9 @@ The **95% confidence band** is ±1.96 / √n ≈ ±0.057 (for n = 1,197 observat
 
 **Figures 15–17 (`autocorr_bitcoin.png`, `autocorr_xrp.png`, `autocorr_icp.png`): Autocorrelation Bar Charts**
 
-![Autocorrelation of Log Return – Bitcoin](../images/autocorr_bitcoin.png)
-![Autocorrelation of Log Return – XRP](../images/autocorr_xrp.png)
-![Autocorrelation of Log Return – ICP](../images/autocorr_icp.png)
+![Autocorrelation of Log Return Bitcoin](../images/autocorr_bitcoin.png)
+![Autocorrelation of Log Return XRP](../images/autocorr_xrp.png)
+![Autocorrelation of Log Return ICP](../images/autocorr_icp.png)
 
 Each of Figures 15, 16, and 17 shows 20 vertical bars, one per lag day from 1 to 20. The height of each bar is the autocorrelation at that lag. Dashed blue horizontal lines mark the 95% confidence band (±0.057). Red bars indicate lags where the autocorrelation falls outside the confidence band (statistically significant); grey bars are within the band (not significant).
 
@@ -653,7 +653,7 @@ A Random Forest trains many Decision Trees on random subsets of the data and fea
 
 XGBoost (Extreme Gradient Boosting) trains trees sequentially, where each new tree corrects the errors of the previous one. It is widely regarded as the best-performing model for structured tabular data in general.
 
-*Why the EDA does not support it here:* XGBoost is powerful because it finds complex, non-linear, multi-way interactions in data. The EDA found no evidence of such structure. The ACF analysis (Figures 15–17) showed that log returns are close to a random walk. The lag-1 correlation analysis (Figures 9–11) found only weak linear signals. XGBoost applied to near-random data does not find real patterns — it finds noise and memorises it. Additionally, XGBoost requires tuning of many hyperparameters (learning rate, max_depth, n_estimators, subsample, column subsampling, L1 and L2 regularisation). With ~1,190 observations and time-series cross-validation, each training fold has very few samples, making reliable tuning difficult.
+*Why the EDA does not support it here:* XGBoost is powerful because it finds complex, non-linear, multi-way interactions in data. The EDA found no evidence of such structure. The ACF analysis (Figures 15–17) showed that log returns are close to a random walk. The lag-1 correlation analysis (Figures 9–11) found only weak linear signals. XGBoost applied to near-random data does not find real patterns. It finds noise and memorises it. Additionally, XGBoost requires tuning of many hyperparameters (learning rate, max_depth, n_estimators, subsample, column subsampling, L1 and L2 regularisation). With ~1,190 observations and time-series cross-validation, each training fold has very few samples, making reliable tuning difficult.
 
 | Pros | Cons |
 |---|---|
