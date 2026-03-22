@@ -23,6 +23,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
+from scipy import stats
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -439,6 +440,9 @@ def plot_lag_correlation(coin: str, df: pd.DataFrame, images_dir: str) -> pd.Ser
 
     Correlation method: Pearson, which is mathematically equivalent to
     point-biserial correlation when the target variable is binary (0/1).
+    P-values are computed via scipy.stats.pearsonr (two-tailed t-test,
+    t = r * sqrt(n-2) / sqrt(1-r^2)) and printed to stdout as a
+    significance table (* p<0.05, ** p<0.01, ns = not significant).
 
     Args:
         coin:       Coin name for the plot title and filename.
@@ -454,9 +458,35 @@ def plot_lag_correlation(coin: str, df: pd.DataFrame, images_dir: str) -> pd.Ser
     lag_df["target"] = df["price_direction"].shift(-1)
     lag_df = lag_df.dropna()
 
-    lag_corr = lag_df[LAG_FEATURE_COLS].corrwith(lag_df["target"]).sort_values(
-        key=abs, ascending=False
-    )
+    # Compute Pearson r and two-tailed p-value for each feature.
+    # Pearson correlation is mathematically equivalent to point-biserial
+    # correlation when the target is binary, so no special test is needed.
+    r_vals = {}
+    p_vals = {}
+    for feat in LAG_FEATURE_COLS:
+        r, p = stats.pearsonr(lag_df[feat], lag_df["target"])
+        r_vals[feat] = r
+        p_vals[feat] = p
+
+    # Sort by absolute correlation descending (same ordering as before)
+    lag_corr = pd.Series(r_vals).sort_values(key=abs, ascending=False)
+
+    # Print significance table to stdout
+    print(f"\n{coin} — Lag-1 Pearson Correlation with Next-Day Price Direction")
+    print(f"  n = {len(lag_df)},  95% significance threshold: p < 0.05")
+    print(f"  {'Feature':<28} {'r':>8} {'p-value':>10}  sig")
+    print("  " + "-" * 55)
+    for feat in lag_corr.index:
+        r = r_vals[feat]
+        p = p_vals[feat]
+        if p < 0.01:
+            sig = "**"
+        elif p < 0.05:
+            sig = "*"
+        else:
+            sig = "ns"
+        print(f"  {feat:<28} {r:>8.4f} {p:>10.4f}  {sig}")
+
     bar_colors = ["#2ecc71" if v >= 0 else "#e74c3c" for v in lag_corr.values]
 
     plt.figure(figsize=(8, 5))
@@ -473,7 +503,10 @@ def plot_lag_correlation(coin: str, df: pd.DataFrame, images_dir: str) -> pd.Ser
 
 def plot_top_indicator_scatter(coin: str, df: pd.DataFrame,
                                 lag_corr: pd.Series, images_dir: str) -> None:
-    """Scatter plots of the top-3 lag-1 indicators vs log_return.
+    """Scatter plots of the top-3 lag-1 indicators vs next-day log_return.
+
+    X-axis: indicator value at day t-1 (the predictor).
+    Y-axis: log_return at day t (the outcome being predicted).
 
     Indicators are ranked by absolute Pearson correlation with next-day
     price direction. Each subplot includes a linear regression line.
@@ -492,9 +525,13 @@ def plot_top_indicator_scatter(coin: str, df: pd.DataFrame,
     fig, axes = plt.subplots(1, 3, figsize=(15, 4))
     for ax, indicator in zip(axes, top3):
         col = str(indicator)
-        plot_df = df[[col, "log_return"]].dropna().reset_index(drop=True)
+        # Use the indicator from t-1 and next-day log_return as the outcome
+        plot_df = pd.DataFrame({
+            col: df[col].values[:-1],
+            "next_log_return": df["log_return"].values[1:],
+        }).dropna().reset_index(drop=True)
         x_vals = plot_df[col].to_numpy(dtype=float).ravel()
-        y_vals = plot_df["log_return"].to_numpy(dtype=float).ravel()
+        y_vals = plot_df["next_log_return"].to_numpy(dtype=float).ravel()
 
         ax.scatter(x_vals, y_vals, alpha=0.3, color=COLORS[coin], s=10)
 
@@ -502,9 +539,9 @@ def plot_top_indicator_scatter(coin: str, df: pd.DataFrame,
         x_line = np.linspace(x_vals.min(), x_vals.max(), 100)
         ax.plot(x_line, np.polyval(coeffs, x_line), color="black", linewidth=1.5)
 
-        ax.set_title(f"{coin}: {col} vs Log Return")
-        ax.set_xlabel(col)
-        ax.set_ylabel("Log Return")
+        ax.set_title(f"{coin}: {col} (t-1) vs Next-Day Log Return")
+        ax.set_xlabel(f"{col} at t-1")
+        ax.set_ylabel("Log Return at t")
         ax.tick_params(axis="x", rotation=30)
 
     slug = coin.lower().replace(" ", "_")
@@ -556,6 +593,16 @@ def analyze_autocorrelation(datasets: dict, images_dir: str) -> None:
 
         acf_vals = [returns.autocorr(lag=k) for k in range(1, MAX_LAG + 1)]
         lags = list(range(1, MAX_LAG + 1))
+
+        # Print lag-1 ACF result with significance verdict
+        acf_lag1 = acf_vals[0]
+        sig_lag1 = "significant" if abs(acf_lag1) > conf_band else "not significant"
+        print(f"\n{coin} — Autocorrelation of Log Return")
+        print(f"  n = {n},  95% confidence band: ±{conf_band:.4f}")
+        print(f"  Lag-1 ACF: {acf_lag1:.4f}  ({sig_lag1} at 95% level)")
+        sig_count = sum(1 for v in acf_vals if abs(v) > conf_band)
+        print(f"  Lags 1–{MAX_LAG} with |ACF| > band: {sig_count} of {MAX_LAG}")
+
         # Highlight bars that exceed the confidence band in red
         bar_colors = ["#e74c3c" if abs(v) > conf_band else "#95a5a6" for v in acf_vals]
 
