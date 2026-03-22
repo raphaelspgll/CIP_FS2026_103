@@ -1,4 +1,5 @@
 import scrapy
+from scrapy import Selector
 from datetime import datetime, timezone, timedelta
 from coingecko.items import CryptoItem
 
@@ -12,28 +13,25 @@ def parse_price(text: str):
         return None
 
 
-def parse_date_str(text: str) -> str:
-    """Convert 'Jan 01, 2024' to '2024-01-01'."""
-    return datetime.strptime(text.strip(), "%b %d, %Y").strftime("%Y-%m-%d")
-
-
 class CoinGeckoSpider(scrapy.Spider):
     name = "coingecko"
 
     def start_requests(self):
         coin_list = self.settings.get("COIN_LIST", [])
+        self.today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
         self.cutoff_date = (
             datetime.now(timezone.utc) - timedelta(days=3 * 365)
         ).strftime("%Y-%m-%d")
-        self.logger.info(f"Scraping from {self.cutoff_date} to today")
+        self.logger.info(f"Scraping from {self.cutoff_date} to {self.today}")
 
         for coin in coin_list:
-            url = (
-                f"https://www.coingecko.com/en/coins"
-                f"/{coin['coin_id']}/historical_data"
+            # Initial Scrapy request uses the base URL (robots.txt compliant).
+            # Playwright will then navigate to the date-ranged URL inside the browser.
+            base_url = (
+                f"https://www.coingecko.com/en/coins/{coin['coin_id']}/historical_data"
             )
             yield scrapy.Request(
-                url,
+                base_url,
                 meta={
                     "playwright": True,
                     "playwright_include_page": True,
@@ -49,13 +47,74 @@ class CoinGeckoSpider(scrapy.Spider):
                 callback=self.parse,
             )
 
+    async def _oldest_table_date(self, page) -> str | None:
+        """Return the oldest date string visible in the table, or None."""
+        rows = await page.query_selector_all("table tbody tr")
+        oldest = None
+        for row in rows:
+            cells = await row.query_selector_all("td")
+            if not cells:
+                continue
+            text = (await cells[0].inner_text()).strip()
+            if len(text) == 10 and (oldest is None or text < oldest):
+                oldest = text
+        return oldest
+
+    async def _click_button_by_text(self, page, text: str) -> bool:
+        """Click the first visible button whose text matches. Returns True if found."""
+        buttons = await page.query_selector_all("button")
+        for btn in buttons:
+            t = (await btn.inner_text()).strip()
+            if t == text:
+                await btn.click()
+                return True
+        return False
+
     async def parse(self, response, **kwargs):
         coin = response.meta["coin"]
         page = response.meta.get("playwright_page")
-        if page:
-            await page.close()
 
-        rows = response.css("table tbody tr")
+        if page:
+            # Navigate to 3-year date range via browser (bypasses Scrapy robots.txt check)
+            date_url = (
+                f"https://www.coingecko.com/en/coins/{coin['coin_id']}/historical_data"
+                f"?start={self.cutoff_date}&end={self.today}"
+            )
+            await page.goto(date_url, wait_until="domcontentloaded", timeout=60000)
+            await page.wait_for_selector("table tbody tr", timeout=30000)
+
+            # Loop "Show More" until oldest row is at or before cutoff
+            max_clicks = 80  # safety cap: 80 * ~20 rows >> 1095 rows needed
+            for i in range(max_clicks):
+                oldest = await self._oldest_table_date(page)
+                if oldest is None or oldest <= self.cutoff_date:
+                    self.logger.info(
+                        f"[{coin['coin_id']}] Oldest date {oldest!r} reached cutoff "
+                        f"after {i} 'Show More' clicks"
+                    )
+                    break
+                clicked = await self._click_button_by_text(page, "Show More")
+                if not clicked:
+                    self.logger.warning(
+                        f"[{coin['coin_id']}] 'Show More' not found after {i} clicks; "
+                        f"oldest date: {oldest}"
+                    )
+                    break
+                await page.wait_for_timeout(1500)
+            else:
+                oldest = await self._oldest_table_date(page)
+                self.logger.warning(
+                    f"[{coin['coin_id']}] Hit max_clicks={max_clicks}; oldest date: {oldest}"
+                )
+
+            html = await page.content()
+            await page.close()
+            sel = Selector(text=html)
+        else:
+            sel = response
+
+        # Table columns: Date | Market Cap | Volume | Price
+        rows = sel.css("table tbody tr")
         self.logger.info(f"[{coin['coin_id']}] Found {len(rows)} candidate rows")
 
         start_date = end_date = None
@@ -63,28 +122,22 @@ class CoinGeckoSpider(scrapy.Spider):
 
         for row in rows:
             cells = row.css("td")
-            if len(cells) < 5:
+            if len(cells) < 4:
                 continue
-            try:
-                date_str = parse_date_str(cells[0].css("::text").get(""))
-            except ValueError:
+
+            date_str = cells[0].css("::text").get("").strip()
+            if not date_str or len(date_str) != 10:
                 continue
 
             if date_str < self.cutoff_date:
                 continue
 
-            price_usd      = parse_price(cells[4].css("::text").get(""))  # Close
             market_cap_usd = parse_price(cells[1].css("::text").get(""))
             volume_24h_usd = parse_price(cells[2].css("::text").get(""))
-            open_price     = parse_price(cells[3].css("::text").get(""))
+            price_usd      = parse_price(cells[3].css("::text").get(""))
 
-            # Note: this is open-to-close (same day). preprocessing.py fills missing values
-            # using close-to-close (previous day). The field is not used in modeling.
-            if price_usd is not None and open_price is not None and open_price != 0.0:
-                price_change_pct = round((price_usd - open_price) / open_price * 100, 4)
-            else:
-                price_change_pct = None
-
+            # price_change_pct unavailable from this table;
+            # preprocessing.py recomputes it from price_usd.shift(1).
             yield CryptoItem(
                 date             = date_str,
                 coin_id          = coin["coin_id"],
@@ -93,7 +146,7 @@ class CoinGeckoSpider(scrapy.Spider):
                 price_usd        = price_usd,
                 market_cap_usd   = market_cap_usd,
                 volume_24h_usd   = volume_24h_usd,
-                price_change_pct = price_change_pct,
+                price_change_pct = None,
                 scraped_at       = datetime.now(timezone.utc).isoformat(),
             )
 
