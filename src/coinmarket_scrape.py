@@ -3,7 +3,7 @@ import pandas as pd
 import os
 from datetime import datetime, timedelta
 
-output_dir = '../data/'
+output_dir = '../data/data_raw/'
 os.makedirs(output_dir, exist_ok=True)
 
 coins = [
