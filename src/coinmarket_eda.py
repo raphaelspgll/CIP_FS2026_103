@@ -492,9 +492,12 @@ def plot_top_indicator_scatter(coin: str, df: pd.DataFrame,
     fig, axes = plt.subplots(1, 3, figsize=(15, 4))
     for ax, indicator in zip(axes, top3):
         col = str(indicator)
-        plot_df = df[[col, "log_return"]].dropna().reset_index(drop=True)
+        # Use log_return shifted by -1: indicator[t] vs log_return[t+1] (next day)
+        plot_df = df[[col]].copy()
+        plot_df["next_log_return"] = df["log_return"].shift(-1)
+        plot_df = plot_df.dropna().reset_index(drop=True)
         x_vals = plot_df[col].to_numpy(dtype=float).ravel()
-        y_vals = plot_df["log_return"].to_numpy(dtype=float).ravel()
+        y_vals = plot_df["next_log_return"].to_numpy(dtype=float).ravel()
 
         ax.scatter(x_vals, y_vals, alpha=0.3, color=COLORS[coin], s=10)
 
@@ -502,9 +505,9 @@ def plot_top_indicator_scatter(coin: str, df: pd.DataFrame,
         x_line = np.linspace(x_vals.min(), x_vals.max(), 100)
         ax.plot(x_line, np.polyval(coeffs, x_line), color="black", linewidth=1.5)
 
-        ax.set_title(f"{coin}: {col} vs Log Return")
-        ax.set_xlabel(col)
-        ax.set_ylabel("Log Return")
+        ax.set_title(f"{coin}: {col} (t) vs Log Return (t+1)")
+        ax.set_xlabel(f"{col} at t")
+        ax.set_ylabel("Log Return at t+1")
         ax.tick_params(axis="x", rotation=30)
 
     slug = coin.lower().replace(" ", "_")

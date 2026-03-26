@@ -367,7 +367,7 @@ This indicates that the strongest available predictor for Bitcoin and XRP is whe
 ![Top Indicator Scatter XRP](../images/scatter_top_indicators_xrp.png)
 ![Top Indicator Scatter ICP](../images/scatter_top_indicators_icp.png)
 
-For each cryptocurrency, Figure 12–14 shows scatter plots of the three strongest lag-1 predictors (horizontal axis) against the next-day log return (vertical axis). Each dot represents one trading day. A linear regression line (black) is overlaid to visualise the direction and slope of the relationship.
+For each cryptocurrency, Figure 12–14 shows scatter plots of the three strongest lag-1 predictors at day t (horizontal axis, labelled as `indicator at t`) against the next-day log return at day t+1 (vertical axis, labelled as `Log Return at t+1`). Each dot represents one trading day. A linear regression line (black) is overlaid to visualise the direction and slope of the relationship.
 
 On these plots we can see that all three scatter plots show **clouds of points with no clearly visible pattern**. The dots are dispersed widely around the regression line, which has a very shallow slope in all cases. The regression line for `log_return` and `log_close_open_ratio` has a slight downward slope for Bitcoin and XRP (consistent with the negative correlation), but the scatter is so large that the line explains only a tiny fraction of the variance.
 
