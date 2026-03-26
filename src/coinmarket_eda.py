@@ -14,7 +14,7 @@ This script:
 - Checks stationarity and uses only stationary features for lag-1 analysis
 - Produces distribution, correlation, autocorrelation, cross-asset, and
   volatility plots saved to images/
-- Saves enriched DataFrames to data/data_processed/*_features.csv
+- Saves enriched DataFrames to data/processed/*_features.csv
 """
 
 import os
@@ -35,8 +35,8 @@ except NameError:
     # Fallback for interactive consoles (e.g. PyCharm) where __file__ is not defined
     _BASE = os.path.join(os.getcwd(), "src")
 
-RAW_DIR       = os.path.join(_BASE, "../data/data_raw")       # raw CSVs from scraper
-PROCESSED_DIR = os.path.join(_BASE, "../data/data_processed") # engineered feature CSVs
+RAW_DIR       = os.path.join(_BASE, "../data/raw")       # raw CSVs from scraper
+PROCESSED_DIR = os.path.join(_BASE, "../data/processed") # engineered feature CSVs
 IMAGES_DIR    = os.path.join(_BASE, "../images")              # all plot outputs
 
 COINS = {
