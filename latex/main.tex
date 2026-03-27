@@ -1,0 +1,134 @@
+%% ============================================================
+%%  CIP_FS2026_103 — Project Report
+%%  Data Collection, Integration and Preprocessing
+%%  HSLU, FS 2026, Group 103
+%% ============================================================
+\documentclass[11pt,a4paper]{article}
+
+%% ---- Packages -----------------------------------------------
+\usepackage[margin=2.5cm]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{setspace}
+\usepackage{parskip}          % space between paragraphs, no indent
+\usepackage{titlesec}
+\usepackage{fancyhdr}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{multirow}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{amsmath}
+\usepackage{caption}
+\usepackage{float}
+
+%% ---- Colours ------------------------------------------------
+\definecolor{hslu}{RGB}{0,93,170}       % HSLU blue
+\definecolor{lightgray}{RGB}{245,245,245}
+
+%% ---- Hyperref -----------------------------------------------
+\hypersetup{
+  colorlinks = true,
+  linkcolor  = hslu,
+  urlcolor   = hslu,
+  citecolor  = hslu,
+  pdftitle   = {CIP Project Report — Group 103},
+  pdfauthor  = {Lemma Emanuel, Spagolla Raphaël, Krishnathasan Tharrmeehan},
+}
+
+%% ---- Section formatting ------------------------------------
+\titleformat{\section}
+{\large\bfseries\color{hslu}}
+{\thesection.}{0.5em}{}[\titlerule]
+\titleformat{\subsection}
+{\normalsize\bfseries}
+{\thesubsection.}{0.5em}{}
+\titleformat{\subsubsection}
+{\normalsize\itshape}
+{\thesubsubsection.}{0.5em}{}
+\titlespacing*{\section}{0pt}{1.2ex plus .5ex}{0.6ex plus .2ex}
+\titlespacing*{\subsection}{0pt}{0.9ex plus .3ex}{0.4ex plus .1ex}
+\titlespacing*{\subsubsection}{0pt}{0.7ex plus .2ex}{0.3ex plus .1ex}
+
+%% ---- Header / Footer ----------------------------------------
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0.4pt}
+\fancyhead[L]{\small\textcolor{gray}{CIP02 — FS 2026 — Group 103}}
+\fancyhead[R]{\small\textcolor{gray}{Cryptocurrency Price Direction Prediction}}
+\fancyfoot[C]{\small\thepage}
+
+%% ---- Table helpers ------------------------------------------
+\renewcommand{\arraystretch}{1.15}
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+\newcolumntype{C}[1]{>{\centering\arraybackslash}p{#1}}
+
+%% ---- Line spacing -------------------------------------------
+\setstretch{1.05}
+
+%% =============================================================
+\begin{document}
+
+%% ---- Title Page (page 1) ------------------------------------
+\thispagestyle{empty}
+
+\vspace*{2cm}
+\begin{center}
+  {\LARGE\bfseries\color{hslu}
+    Cryptocurrency Price Direction Prediction\\[0.4em]
+  Using Market Indicators}\\[0.8em]
+  {\large Project Report — Data Collection, Integration and Preprocessing}\\[1.8em]
+
+  \noindent\rule{0.6\textwidth}{0.5pt}\\[1.2em]
+
+  \begin{tabular}{@{}rl@{}}
+    \textbf{Course}    & Data Collection, Integration and Preprocessing (CIP02) \\
+    \textbf{Semester}  & FS 2026 \\
+    \textbf{Group}     & 103 \\
+    \textbf{Date}      & April 2026 \\[0.6em]
+    \textbf{Authors}
+    & Lemma Emanuel \\
+    & Spagolla Raphaël \\
+    & Krishnathasan Tharrmeehan \\[0.6em]
+    \textbf{Institution} & Hochschule Luzern (HSLU) \\
+  \end{tabular}\\[1.8em]
+
+  \noindent\rule{0.6\textwidth}{0.5pt}
+\end{center}
+
+\vspace{1.5cm}
+\noindent\textbf{Abstract.}
+This report presents a binary classification pipeline to predict the daily price movement direction (up / down) of six major cryptocurrencies using publicly available market indicators from the preceding day.
+Historical data spanning three years was collected from CoinGecko via a Scrapy--Playwright spider, cleaned, and enriched with technical features (moving averages, volatility, volume change).
+Three classifiers were evaluated under a strict chronological train/test split: Logistic Regression, Decision Tree, and Linear Regression used as a classifier.
+Results and design decisions are discussed, with particular attention to preventing look-ahead bias in time-series settings.
+
+\newpage
+
+%% ---- Chapters -----------------------------------------------
+\input{chapters/01_introduction}
+\input{chapters/02_methods}
+\input{chapters/03_discussion}
+\input{chapters/04_conclusion}
+
+%% ---- References (optional placeholder) ---------------------
+\vspace{1em}
+\noindent\rule{\textwidth}{0.4pt}
+\small
+\noindent\textbf{Tools \& Libraries:}
+Python 3.10+,
+Scrapy 2.13,
+scrapy-playwright 0.0.43,
+Pandas 3.0.1,
+NumPy 2.4.3,
+scikit-learn 1.8.0,
+Matplotlib 3.10.8,
+Seaborn 0.13.2.
+\textbf{Data source:} CoinGecko (\url{https://www.coingecko.com}).
+
+\end{document}

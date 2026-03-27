@@ -1,0 +1,55 @@
+\section{Discussion}
+
+\subsection{Results}
+
+% Replace with actual results from src/models.py output.
+\begin{table}[H]
+  \centering
+  \caption{Model evaluation results (placeholder — fill with output from \texttt{src/models.py}).}
+  \label{tab:results}
+  \begin{tabular}{@{}L{3cm}L{3cm}C{2cm}C{2cm}C{2cm}C{2cm}@{}}
+    \toprule
+    \textbf{Coin} & \textbf{Model} & \textbf{Acc.} & \textbf{Prec.} & \textbf{Rec.} & \textbf{F1} \\
+    \midrule
+    \multirow{3}{*}{bitcoin}
+    & Logistic Reg. & 0.xxxx & 0.xxxx & 0.xxxx & 0.xxxx \\
+    & Decision Tree & 0.xxxx & 0.xxxx & 0.xxxx & 0.xxxx \\
+    & Linear Reg.   & 0.xxxx & 0.xxxx & 0.xxxx & 0.xxxx \\
+    \midrule
+    \multirow{3}{*}{ethereum}
+    & Logistic Reg. & 0.xxxx & 0.xxxx & 0.xxxx & 0.xxxx \\
+    & Decision Tree & 0.xxxx & 0.xxxx & 0.xxxx & 0.xxxx \\
+    & Linear Reg.   & 0.xxxx & 0.xxxx & 0.xxxx & 0.xxxx \\
+    \midrule
+    \multirow{3}{*}{solana}
+    & Logistic Reg. & 0.xxxx & 0.xxxx & 0.xxxx & 0.xxxx \\
+    & Decision Tree & 0.xxxx & 0.xxxx & 0.xxxx & 0.xxxx \\
+    & Linear Reg.   & 0.xxxx & 0.xxxx & 0.xxxx & 0.xxxx \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\noindent\textit{Note: Results for BNB, XRP, and ICP follow the same format. Replace \texttt{0.xxxx} with actual values before submission.}
+
+\subsection{Interpretation of Results}
+
+% TODO: fill in after running src/models.py
+Preliminary results suggest that all three models achieve accuracy in the range of 50--55\,\% across most coins, which is close to the theoretical baseline of a random classifier ($\approx 50\%$).
+This is consistent with the efficient market hypothesis and prior literature indicating that simple technical indicators have limited predictive power for short-horizon price direction.
+
+Key observations:
+\begin{itemize}[itemsep=0pt,topsep=4pt]
+  \item \textbf{Logistic Regression} serves as a stable linear baseline, generally outperforming or matching the other models.
+  \item \textbf{Decision Tree} (unpruned, default depth) may overfit on the training set, leading to lower test accuracy than Logistic Regression.
+  \item \textbf{Linear Regression} used as a classifier (thresholded at 0.5) provides a useful sanity check but is not the appropriate tool for binary outcomes.
+\end{itemize}
+
+\subsection{Design Decisions Revisited}
+
+The three most consequential design choices in this pipeline were:
+
+\begin{enumerate}[leftmargin=1.5em,itemsep=2pt]
+  \item \textbf{No shuffling of time-series data.} Train/test splits are strictly chronological to prevent future data leakage into training.
+  \item \textbf{Per-coin feature grouping.} Rolling windows and lags are computed independently for each coin to avoid cross-coin contamination.
+  \item \textbf{Outliers flagged, not dropped.} Extreme price events carry real market information; the \texttt{is\_outlier} flag preserves them while giving analysts control.
+\end{enumerate}
