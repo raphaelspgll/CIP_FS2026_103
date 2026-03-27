@@ -7,14 +7,14 @@ from pathlib import Path
 import pandas as pd
 from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
 
-from .config import (
+from src.models.bitcoin.config import (
     LOGISTIC_METRICS_PATH,
     LOGISTIC_MODEL_PATH,
     MODEL_COMPARISON_PATH,
     TREE_METRICS_PATH,
     TREE_MODEL_PATH,
 )
-from .data import load_and_split_data
+from src.models.bitcoin.data import load_and_split_data
 
 
 def load_model(model_path: Path):

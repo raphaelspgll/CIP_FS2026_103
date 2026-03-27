@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-from .evaluate import main as evaluate_main
-from .train_logistic import save_model as save_logistic_model
-from .train_logistic import train_logistic_model
-from .train_tree import save_model as save_tree_model
-from .train_tree import train_tree_model
+from src.models.bitcoin.evaluate import main as evaluate_main
+from src.models.bitcoin.train_logistic import save_model as save_logistic_model
+from src.models.bitcoin.train_logistic import train_logistic_model
+from src.models.bitcoin.train_tree import save_model as save_tree_model
+from src.models.bitcoin.train_tree import train_tree_model
 
 
 def main() -> None:

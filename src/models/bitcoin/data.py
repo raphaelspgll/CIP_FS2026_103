@@ -4,7 +4,7 @@ from dataclasses import dataclass
 
 import pandas as pd
 
-from .config import (
+from src.models.bitcoin.config import (
     BITCOIN_DATA_PATH,
     DATE_COL,
     FEATURE_COLS,

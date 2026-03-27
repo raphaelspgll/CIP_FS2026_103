@@ -5,8 +5,8 @@ from pathlib import Path
 
 from sklearn.tree import DecisionTreeClassifier
 
-from .config import TREE_MODEL_PATH, TREE_PARAMS
-from .data import load_and_split_data
+from src.models.bitcoin.config import TREE_MODEL_PATH, TREE_PARAMS
+from src.models.bitcoin.data import load_and_split_data
 
 
 def build_tree_model() -> DecisionTreeClassifier:

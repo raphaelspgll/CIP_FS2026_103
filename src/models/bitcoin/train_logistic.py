@@ -7,8 +7,8 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 
-from .config import LOGISTIC_MODEL_PATH, LOGISTIC_PARAMS
-from .data import load_and_split_data
+from src.models.bitcoin.config import LOGISTIC_MODEL_PATH, LOGISTIC_PARAMS
+from src.models.bitcoin.data import load_and_split_data
 
 
 def build_logistic_pipeline() -> Pipeline:
