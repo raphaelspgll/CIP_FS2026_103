@@ -59,5 +59,14 @@ Shuffling is not performed, as it would allow future data to enter the training 
 The models are Logistic Regression (\texttt{LogisticRegression(max\_iter=1000)}) and Decision Tree
 (\texttt{DecisionTreeClassifier()}).
 Model complexity was kept deliberately low to match the weak signal structure identified in the EDA.
-Each model is evaluated on accuracy, precision, recall, and F1-score, with accuracy as the primary
-metric given the near-balanced class distribution.
+Each model is evaluated on four metrics. Let TP, FP, TN, FN denote true positives, false positives,
+true negatives, and false negatives respectively.
+\textbf{Accuracy} measures the share of all predictions that are correct:
+$\text{Accuracy} = (TP + TN) / (TP + TN + FP + FN)$.
+\textbf{Precision} measures how many of the predicted bullish days were actually bullish:
+$\text{Precision} = TP / (TP + FP)$.
+\textbf{Recall} measures how many of the truly bullish days the model correctly identified:
+$\text{Recall} = TP / (TP + FN)$.
+\textbf{F1-score} is the harmonic mean of precision and recall:
+$F_1 = 2 \cdot (\text{Precision} \cdot \text{Recall}) / (\text{Precision} + \text{Recall})$.
+Accuracy is the primary metric given the near-balanced class distribution.
