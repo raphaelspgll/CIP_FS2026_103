@@ -64,16 +64,13 @@ bands of $\pm 1.96 / \sqrt{n} = \pm 0.057$.
 
 Nearly all coefficients fall within the confidence band across all three coins, confirming
 near-random walk behaviour.
-The accuracy ceiling of 52 to 58\,\% is derived from three observations.
+The expected accuracy ceiling is derived from three observations.
 First, the class balance sets the trivial floor. A classifier that always predicts the majority
 class achieves 50.4\,\% (BTC), 51.1\,\% (XRP), and 52.6\,\% (ICP) without learning anything.
 Second, the ACF confirms the series is statistically consistent with white noise, so the realistic
 accuracy is very close to this floor.
-Third, the significant lag-1 correlations (max $|r| = 0.081$ for XRP) provide a rough upper bound.
-For a binary target with a single predictor of correlation $r$ and class probability $P \approx 0.5$,
-the maximum accuracy gain from a linear classifier is approximately
-$|r| \cdot \sqrt{P(1-P)} \approx 0.081 \times 0.5 \approx 4$ percentage points above the baseline,
-placing the theoretical ceiling at roughly 54 to 58\,\%.
+Third, the significant lag-1 correlations are very small (max $|r| = 0.081$ for XRP), indicating
+that even the strongest predictor carries almost no information about the next-day direction.
 Any result substantially above this range would indicate data leakage, which was confirmed when
 initial experiments with unlagged features produced 100\,\% Decision Tree accuracy.
 
