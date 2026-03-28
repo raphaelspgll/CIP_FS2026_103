@@ -1,181 +1,63 @@
 \section{Methods}
 
-%% ---- Data Sources & Acquisition --------------------------------
-\subsection{Data Sources \& Acquisition}
+\subsection{Data Source and Collection}
 
-\subsubsection{Data Source}
+Historical OHLCV data for Bitcoin, XRP, and ICP were collected from \textbf{CoinMarketCap} using a
+Playwright-based scraper (\texttt{src/coinmarket\_scrape.py}).
+Playwright drives a headless Chromium browser to handle the JavaScript-rendered price tables.
+The scrape covers daily records from 2022-12-08 to 2026-03-19, yielding \textbf{1\,198 rows per coin}
+The seven fields are date, open, high, low, close, 24-hour volume, and market capitalisation.
 
-All data were collected from \textbf{CoinGecko} historical data pages, which provide daily OHLCV figures going back several years.
-The target URL pattern is:
-\begin{center}
-  \texttt{https://www.coingecko.com/en/coins/\{coin\_id\}/historical\_data}
-\end{center}
+\subsection{Preprocessing and Feature Engineering}
 
-\subsubsection{Scraper Architecture}
+Raw files were inspected for missing values, duplicate dates, and OHLCV constraint violations.
+All checks passed without issues.
+No outliers were removed. Extreme price events such as exchange listings or market crashes are real
+market signals that must be preserved.
 
-The scraper is built on \textbf{Scrapy} with the \texttt{scrapy-playwright} extension, which drives a headless Chromium browser to handle JavaScript-rendered tables.
-Key configuration parameters are listed in Table~\ref{tab:scraper-config}.
+Ten log-transformed features were computed per coin.
+\textbf{Logarithmic scaling} was applied throughout because cryptocurrency prices are log-normally
+distributed, log returns are symmetric and additive, and log-transforming volume and market
+capitalisation removes scale dominance across the three assets.
 
-\begin{table}[H]
-  \centering
-  \caption{Scrapy / Playwright configuration.}
-  \label{tab:scraper-config}
-  \begin{tabular}{@{}L{4cm}L{3.5cm}L{6cm}@{}}
-    \toprule
-    \textbf{Setting} & \textbf{Value} & \textbf{Purpose} \\
-    \midrule
-    \texttt{DOWNLOAD\_DELAY}       & 2.5 s  & Polite crawl rate \\
-    \texttt{AUTOTHROTTLE\_ENABLED} & True   & Adaptive rate limiting \\
-    \texttt{PLAYWRIGHT\_BROWSER}   & chromium & Headless JS rendering \\
-    \texttt{ROBOTSTXT\_OBEY}       & True   & Respects robots.txt \\
-    \bottomrule
-  \end{tabular}
-\end{table}
-
-\subsubsection{Parsing Logic}
-
-For each table row the spider reads four columns: date, market cap, 24 h volume, and closing price.
-Because CoinGecko does not expose an open price in the historical table, \texttt{price\_change\_pct} is always yielded as \texttt{None} and recomputed during preprocessing as a day-over-day return.
-
-The spider applies a three-year date filter and repeatedly clicks the \emph{Show More} button (up to 80 times) to load the full history.
-On close it logs the start date, end date, and item count per coin for audit purposes.
-
-\subsubsection{Raw Data Schema}
-
-Each raw CSV contains the fields shown in Table~\ref{tab:raw-schema}.
+A \textbf{stationarity analysis} showed that level features (\texttt{log\_close}, \texttt{ma\_7},
+\texttt{ma\_30}, \texttt{log\_market\_cap}) are non-stationary and exhibit pairwise Pearson
+correlations of $r \geq 0.91$.
+Including them as predictors would produce spurious correlations with the target.
+They were therefore excluded, leaving five stationary features for modelling (Table~\ref{tab:features}).
 
 \begin{table}[H]
   \centering
-  \caption{Raw data schema (\texttt{data/raw/\{coin\_id\}.csv}).}
-  \label{tab:raw-schema}
-  \begin{tabular}{@{}L{3.5cm}L{2.5cm}L{7cm}@{}}
-    \toprule
-    \textbf{Field} & \textbf{Type} & \textbf{Description} \\
-    \midrule
-    \texttt{date}             & string        & ISO 8601 (\texttt{YYYY-MM-DD}) \\
-    \texttt{coin\_id}          & string        & CoinGecko slug \\
-    \texttt{coin\_name}        & string        & Human-readable name \\
-    \texttt{symbol}           & string        & Ticker (e.g.\ BTC) \\
-    \texttt{price\_usd}        & float         & Daily closing price in USD \\
-    \texttt{market\_cap\_usd}  & float         & Market capitalisation in USD \\
-    \texttt{volume\_24h\_usd}  & float         & 24-hour trading volume in USD \\
-    \texttt{price\_change\_pct}& float         & Day-over-day \% change (recomputed) \\
-    \texttt{scraped\_at}       & string (UTC)  & Timestamp of scrape \\
-    \bottomrule
-  \end{tabular}
-\end{table}
-
-%% ---- Data Preprocessing ----------------------------------------
-\subsection{Data Preprocessing}
-
-\subsubsection{Overview}
-
-Raw CSVs are read from \texttt{data/raw/} and passed through a five-step cleaning pipeline implemented in \texttt{src/preprocessing.py}.
-The cleaned output is written to \texttt{data/processed/\{coin\_id\}\_cleaned.csv}.
-
-\subsubsection{Processing Steps}
-
-\textbf{Step 1 — Type casting.}
-The \texttt{date} column is parsed to \texttt{datetime64[ns]}; the four numeric fields are cast to \texttt{float64}.
-
-\textbf{Step 2 — Deduplication.}
-Rows are sorted by \texttt{scraped\_at} descending; duplicates on the composite key \texttt{(coin\_id, date)} are dropped, retaining the most recent scrape.
-
-\textbf{Step 3 — Missing value handling.}
-The strategy varies by field importance (Table~\ref{tab:missing}).
-
-\begin{table}[H]
-  \centering
-  \caption{Missing value handling strategy.}
-  \label{tab:missing}
-  \begin{tabular}{@{}L{3.5cm}L{9cm}@{}}
-    \toprule
-    \textbf{Field} & \textbf{Strategy} \\
-    \midrule
-    \texttt{price\_usd}        & Drop row — price is the core signal and cannot be fabricated \\
-    \texttt{market\_cap\_usd}  & Forward-fill within coin group; flag with \texttt{market\_cap\_usd\_imputed = True} \\
-    \texttt{volume\_24h\_usd}  & Forward-fill within coin group; flag with \texttt{volume\_24h\_usd\_imputed = True} \\
-    \texttt{price\_change\_pct}& Recompute as $p_t / p_{t-1} - 1$; prefer scraped value when present \\
-    \bottomrule
-  \end{tabular}
-\end{table}
-
-\textbf{Step 4 — Outlier flagging.}
-Rows where $|\texttt{price\_change\_pct}| > 50\%$ are marked \texttt{is\_outlier = True}.
-They are \emph{retained} rather than dropped: extreme price swings such as exchange listings or market crashes are real events that should not be silently removed.
-
-\textbf{Step 5 — Sorting.}
-The output is sorted by \texttt{(coin\_id, date)} ascending.
-
-%% ---- Feature Engineering ---------------------------------------
-\subsection{Feature Engineering}
-
-\subsubsection{Overview}
-
-Feature engineering is implemented in \texttt{src/features.py}.
-All features are computed \emph{per coin} (grouped by \texttt{coin\_id}) to prevent cross-coin leakage, then \emph{lagged by one day} so the model only sees information available before the prediction date.
-
-\subsubsection{Computed Features}
-
-\begin{table}[H]
-  \centering
-  \caption{Engineered features and lag status.}
+  \caption{Feature set used for modelling (all values from day $t-1$).}
   \label{tab:features}
-  \begin{tabular}{@{}L{3cm}L{6.5cm}C{2cm}@{}}
+  \begin{tabular}{@{}L{4cm}L{9cm}@{}}
     \toprule
-    \textbf{Feature} & \textbf{Formula} & \textbf{Lagged?} \\
+    \textbf{Feature} & \textbf{Description} \\
     \midrule
-    \texttt{daily\_return}   & $p_t / p_{t-1} - 1$                            & Yes \\
-    \texttt{ma\_7}           & 7-day rolling mean of \texttt{price\_usd}       & Yes \\
-    \texttt{ma\_30}          & 30-day rolling mean of \texttt{price\_usd}      & Yes \\
-    \texttt{volatility\_7}   & 7-day rolling std of \texttt{daily\_return}     & Yes \\
-    \texttt{vol\_change}     & $v_t / v_{t-1} - 1$                             & Yes \\
-    \texttt{price\_direction}& $1$ if \texttt{daily\_return} $> 0$, else $0$   & \textbf{No} (target) \\
+    \texttt{log\_return}            & $\log(p_t / p_{t-1})$ — daily log return \\
+    \texttt{log\_close\_open\_ratio}& $\log(\text{close} / \text{open})$ — intraday direction \\
+    \texttt{log\_high\_low\_ratio}  & $\log(\text{high} / \text{low})$ — intraday range \\
+    \texttt{volatility\_7}          & 7-day rolling standard deviation of log returns \\
+    \texttt{log\_volume\_change}    & $\log(v_t / v_{t-1})$ — relative volume change \\
     \bottomrule
   \end{tabular}
 \end{table}
 
-\subsubsection{Lag Semantics}
+All features are lagged by one day before training so the model only observes information available
+prior to the prediction date.
+The binary target \texttt{price\_direction} is $1$ if $\log(p_t / p_{t-1}) > 0$, else $0$.
 
-The prediction task is illustrated schematically below:
+\subsection{Analysis Methods}
 
-\[
-  \underbrace{\texttt{daily\_return}_{t-1},\ \texttt{ma\_7}_{t-1},\ \texttt{ma\_30}_{t-1},\ \texttt{volatility\_7}_{t-1},\ \texttt{vol\_change}_{t-1}}_{\text{features from day }t-1}
-  \;\longrightarrow\;
-  \underbrace{\texttt{price\_direction}_{t}}_{\text{target at day }t}
-\]
+\textbf{Exploratory analysis} covered autocorrelation (ACF for lags 1 to 20), lag-1 Pearson
+correlations between each feature and the target, cross-asset log return correlations, and rolling
+volatility.
 
-The first row per coin always has \texttt{NaN} for all lagged features (nothing precedes day 1) and is dropped before modeling.
-
-%% ---- Models ----------------------------------------------------
-\subsection{Models}
-
-\subsubsection{Task \& Split Strategy}
-
-The task is binary classification: predict \texttt{price\_direction} $\in \{0, 1\}$ on day $t$.
-A \textbf{chronological train/test split} (80\,\% train, 20\,\% test) is applied \emph{per coin independently}; no shuffling is performed.
-Shuffling would allow the model to see future data during training, producing optimistic metrics that do not reflect real-world performance.
-
-\subsubsection{Model Descriptions}
-
-Three models are evaluated (Table~\ref{tab:models}):
-
-\begin{table}[H]
-  \centering
-  \caption{Models evaluated.}
-  \label{tab:models}
-  \begin{tabular}{@{}L{3.5cm}L{4.5cm}L{5cm}@{}}
-    \toprule
-    \textbf{Key} & \textbf{Class} & \textbf{Notes} \\
-    \midrule
-    Logistic Regression & \texttt{LogisticRegression(max\_iter=1000)} & Linear baseline \\
-    Decision Tree       & \texttt{DecisionTreeClassifier()}           & Default depth, no pruning \\
-    Linear Regression   & \texttt{LinearRegression()}                 & Continuous output thresholded at 0.5 \\
-    \bottomrule
-  \end{tabular}
-\end{table}
-
-\subsubsection{Evaluation Metrics}
-
-Each model is scored on four metrics: accuracy, precision, recall, and F1-score (harmonic mean of precision and recall).
-Accuracy is the primary metric for this study; the secondary metrics reveal class-level performance and potential imbalance effects.
+\textbf{Modelling} uses two classifiers evaluated under a strict chronological
+\textbf{70\,/\,15\,/\,15 train/validation/test split} applied independently per coin.
+Shuffling is not performed, as it would allow future data to enter the training set.
+The models are Logistic Regression (\texttt{LogisticRegression(max\_iter=1000)}) and Decision Tree
+(\texttt{DecisionTreeClassifier()}).
+Model complexity was kept deliberately low to match the weak signal structure identified in the EDA.
+Each model is evaluated on accuracy, precision, recall, and F1-score, with accuracy as the primary
+metric given the near-balanced class distribution.

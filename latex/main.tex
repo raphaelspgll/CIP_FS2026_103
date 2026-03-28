@@ -38,7 +38,7 @@
   urlcolor   = hslu,
   citecolor  = hslu,
   pdftitle   = {CIP Project Report — Group 103},
-  pdfauthor  = {Lemma Emanuel, Spagolla Raphaël, Krishnathasan Tharrmeehan},
+  pdfauthor  = {Krishnathasan Tharrmeehan, Lemma Emanuel, Spagolla Raphaël},
 }
 
 %% ---- Section formatting ------------------------------------
@@ -95,7 +95,7 @@
     & Lemma Emanuel \\
     & Spagolla Raphaël \\
     & Krishnathasan Tharrmeehan \\[0.6em]
-    \textbf{Institution} & Hochschule Luzern (HSLU) \\
+    \textbf{Institution} & Hochschule Luzern (HSLU) - MSc Applied Information and Data Science \\
   \end{tabular}\\[1.8em]
 
   \noindent\rule{0.6\textwidth}{0.5pt}
@@ -103,10 +103,11 @@
 
 \vspace{1.5cm}
 \noindent\textbf{Abstract.}
-This report presents a binary classification pipeline to predict the daily price movement direction (up / down) of six major cryptocurrencies using publicly available market indicators from the preceding day.
-Historical data spanning three years was collected from CoinGecko via a Scrapy--Playwright spider, cleaned, and enriched with technical features (moving averages, volatility, volume change).
-Three classifiers were evaluated under a strict chronological train/test split: Logistic Regression, Decision Tree, and Linear Regression used as a classifier.
-Results and design decisions are discussed, with particular attention to preventing look-ahead bias in time-series settings.
+This report presents a binary classification pipeline to predict the daily price movement direction (up or down) of three major cryptocurrencies (Bitcoin, XRP, and Internet Computer) using publicly available market indicators from the preceding day.
+Historical Open-High-Low-Close-Volume (OHLCV) data spanning three years was collected from CoinMarketCap using a Playwright-based scraper, cleaned, and enriched with log-transformed technical features.
+An exploratory data analysis confirmed near-random return dynamics and identified a five-feature stationary predictor set.
+Two classifiers were evaluated under a strict chronological 70/15/15 train/validation/test split: Logistic Regression and Decision Tree.
+Test-set accuracy ranged from 40 to 63\,\%, consistent with the efficient market hypothesis and the near-random walk behaviour identified in the EDA.
 
 \newpage
 
@@ -122,13 +123,12 @@ Results and design decisions are discussed, with particular attention to prevent
 \small
 \noindent\textbf{Tools \& Libraries:}
 Python 3.10+,
-Scrapy 2.13,
-scrapy-playwright 0.0.43,
+Playwright,
 Pandas 3.0.1,
 NumPy 2.4.3,
 scikit-learn 1.8.0,
 Matplotlib 3.10.8,
 Seaborn 0.13.2.
-\textbf{Data source:} CoinGecko (\url{https://www.coingecko.com}).
+\textbf{Data source:} CoinMarketCap (\url{https://coinmarketcap.com}).
 
 \end{document}
