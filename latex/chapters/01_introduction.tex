@@ -1,14 +1,20 @@
 \section{Introduction}
 
-The cryptocurrency market is characterised by high volatility and continuous operation, making it an attractive domain for short-term predictive modelling.
-The central research question of this project is: \emph{can publicly available market indicators from day $t-1$ predict the direction of price movement on day $t$?}
+Cryptocurrency markets operate continuously and are characterised by high volatility, rapid price swings,
+and strong sensitivity to market sentiment.
+These properties make them an attractive but challenging domain for short-term predictive modelling.
+Understanding whether tomorrow's price direction can be anticipated from today's observable market
+indicators has direct relevance for trading strategies and risk management.
+
+This project investigates whether publicly available daily market data for three major cryptocurrencies,
+Bitcoin (BTC), Ripple (XRP), and Internet Computer (ICP), can be used to predict the direction of
+next-day price movement.
+The full pipeline covers data collection, preprocessing, exploratory data analysis, and binary
+classification using machine learning.
 
 Three research questions guide the work:
-
 \begin{enumerate}[leftmargin=1.5em,itemsep=0pt]
   \item Which market indicators have the strongest relationship with daily cryptocurrency price changes?
   \item How accurately can historical indicators from day $t-1$ predict price direction on day $t$?
-  \item Which machine learning model achieves the highest accuracy under these conditions?
+  \item Which machine learning model achieves the highest classification accuracy?
 \end{enumerate}
-
-\noindent The pipeline covers six coins: Bitcoin (BTC), Ethereum (ETH), Binance Coin (BNB), Solana (SOL), Ripple (XRP), and Internet Computer (ICP).

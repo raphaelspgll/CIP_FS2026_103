@@ -1,55 +1,158 @@
 \section{Discussion}
 
-\subsection{Results}
+\subsection{RQ1 — Which Indicators Relate Most Strongly to Price Changes?}
 
-% Replace with actual results from src/models.py output.
+To answer the first research question, lag-1 Pearson correlations were computed between each
+stationary feature at day $t-1$ and \texttt{price\_direction} at day $t$.
+Non-stationary level features (\texttt{log\_close}, \texttt{ma\_7}, \texttt{ma\_30},
+\texttt{log\_market\_cap}) were excluded beforehand. They trend with the price level and exhibit
+pairwise correlations of $r \geq 0.91$, which would produce spurious associations with the target.
+
+The strongest statistically significant predictor for Bitcoin and XRP is \texttt{log\_return}
+($r = -0.066$, $p = 0.023$ and $r = -0.081$, $p = 0.006$ respectively), indicating a weak
+mean-reversion tendency. A positive return yesterday is slightly more likely to be followed by
+a downward move today.
+For ICP the significant predictor is \texttt{volatility\_7} ($r = -0.062$, $p = 0.034$),
+suggesting that elevated recent volatility weakly predicts a downward direction.
+All $r^2$ values remain below $0.7\,\%$, confirming that the relationships are statistically
+detectable but practically negligible.
+Figure~\ref{fig:lag1} visualises the full lag-1 correlation profile for each coin.
+
+\begin{figure}[H]
+  \centering
+  \begin{minipage}[t]{0.31\linewidth}
+    \includegraphics[width=\linewidth]{../images/lag1_correlation_bitcoin.png}
+  \end{minipage}\hfill
+  \begin{minipage}[t]{0.31\linewidth}
+    \includegraphics[width=\linewidth]{../images/lag1_correlation_xrp.png}
+  \end{minipage}\hfill
+  \begin{minipage}[t]{0.31\linewidth}
+    \includegraphics[width=\linewidth]{../images/lag1_correlation_icp.png}
+  \end{minipage}
+  \caption{Lag-1 Pearson correlation between each feature at $t-1$ and \texttt{price\_direction}
+           at $t$ for Bitcoin (left), XRP (centre), and ICP (right). Bars marked with * ($p < 0.05$)
+           or ** ($p < 0.01$) are statistically significant. All magnitudes are small, confirming
+           weak predictive power across all features and coins.}
+  \label{fig:lag1}
+\end{figure}
+
+\subsection{RQ2 — How Accurately Can Indicators Predict Price Direction?}
+
+\textbf{ACF analysis sets the predictability ceiling.}
+The autocorrelation function (ACF) measures whether past returns linearly predict future returns.
+Under the weak-form Efficient Market Hypothesis, all ACF coefficients would be zero.
+Figure~\ref{fig:acf} shows the ACF for lags 1 to 20 for all three coins, with 95\,\% confidence
+bands of $\pm 1.96 / \sqrt{n} = \pm 0.057$.
+
+\begin{figure}[H]
+  \centering
+  \begin{minipage}[t]{0.31\linewidth}
+    \includegraphics[width=\linewidth]{../images/autocorr_bitcoin.png}
+  \end{minipage}\hfill
+  \begin{minipage}[t]{0.31\linewidth}
+    \includegraphics[width=\linewidth]{../images/autocorr_xrp.png}
+  \end{minipage}\hfill
+  \begin{minipage}[t]{0.31\linewidth}
+    \includegraphics[width=\linewidth]{../images/autocorr_icp.png}
+  \end{minipage}
+  \caption{ACF of daily log returns for Bitcoin (left), XRP (centre), and ICP (right), lags 1 to 20.
+           Dashed lines mark the 95\,\% confidence band ($\pm 0.057$). Nearly all coefficients fall
+           within the band, confirming near-random walk behaviour. XRP shows a slightly negative
+           lag-1 coefficient, consistent with the mean-reversion signal in Figure~\ref{fig:lag1}.}
+  \label{fig:acf}
+\end{figure}
+
+Nearly all coefficients fall within the confidence band across all three coins, confirming
+near-random walk behaviour.
+The expected accuracy ceiling is derived from three observations.
+First, the class balance sets the trivial floor. A classifier that always predicts the majority
+class achieves 50.4\,\% (BTC), 51.1\,\% (XRP), and 52.6\,\% (ICP) without learning anything.
+Second, the ACF confirms the series is statistically consistent with white noise, so the realistic
+accuracy is very close to this floor.
+Third, the significant lag-1 correlations are very small (max $|r| = 0.081$ for XRP), indicating
+that even the strongest predictor carries almost no information about the next-day direction.
+Any result substantially above this range would indicate data leakage, which was confirmed when
+initial experiments with unlagged features produced 100\,\% Decision Tree accuracy.
+
+\textbf{Rolling volatility and market regimes.}
+Figure~\ref{fig:volatility} shows the 30-day rolling standard deviation of log returns for all
+three coins.
+Volatility is not constant over time. Distinct high-volatility regimes are visible, particularly
+in 2022 and early 2024.
+ICP consistently shows the highest volatility (mean $\sigma_7 = 4.41\,\%$), followed by XRP
+(3.41\,\%) and Bitcoin (2.23\,\%).
+This time-varying structure suggests that a static model trained on the full period may not capture
+regime-specific dynamics, which is a further reason why accuracy is limited.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\linewidth]{../images/rolling_volatility.png}
+  \caption{30-day rolling standard deviation of log returns for all three coins. Volatility
+           clustering and distinct market regimes are visible. ICP consistently exhibits the
+           highest volatility throughout the period.}
+  \label{fig:volatility}
+\end{figure}
+
+\textbf{Cross-asset co-movement.}
+Figure~\ref{fig:cross-asset} shows moderate log return correlations across coins
+(BTC-XRP $r = 0.589$, BTC-ICP $r = 0.572$, XRP-ICP $r = 0.491$).
+Separate models were trained per coin to preserve coin-specific dynamics.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.50\linewidth]{../images/cross_asset_correlation.png}
+  \caption{Cross-asset log return correlation heatmap (Pearson $r$). Co-movement is present but
+           substantial coin-specific variance justifies separate models per coin.}
+  \label{fig:cross-asset}
+\end{figure}
+
+\subsection{RQ2 \& RQ3 — Model Evaluation and Model Comparison}
+
+Table~\ref{tab:results} and Figure~\ref{fig:model-results} report test-set performance for both
+models across all three coins.
+
 \begin{table}[H]
   \centering
-  \caption{Model evaluation results (placeholder — fill with output from \texttt{src/models.py}).}
+  \caption{Test-set evaluation (70/15/15 chronological split).
+           Random baseline = 0.50. Realistic ceiling from ACF = 0.58.}
   \label{tab:results}
-  \begin{tabular}{@{}L{3cm}L{3cm}C{2cm}C{2cm}C{2cm}C{2cm}@{}}
+  \begin{tabular}{@{}L{2.2cm}L{3cm}C{1.7cm}C{1.7cm}C{1.7cm}C{1.7cm}@{}}
     \toprule
     \textbf{Coin} & \textbf{Model} & \textbf{Acc.} & \textbf{Prec.} & \textbf{Rec.} & \textbf{F1} \\
     \midrule
-    \multirow{3}{*}{bitcoin}
-    & Logistic Reg. & 0.xxxx & 0.xxxx & 0.xxxx & 0.xxxx \\
-    & Decision Tree & 0.xxxx & 0.xxxx & 0.xxxx & 0.xxxx \\
-    & Linear Reg.   & 0.xxxx & 0.xxxx & 0.xxxx & 0.xxxx \\
+    \multirow{2}{*}{Bitcoin}
+      & Logistic Reg. & 0.453 & 0.455 & 0.698 & 0.551 \\
+      & Decision Tree & 0.447 & 0.427 & 0.442 & 0.434 \\
     \midrule
-    \multirow{3}{*}{ethereum}
-    & Logistic Reg. & 0.xxxx & 0.xxxx & 0.xxxx & 0.xxxx \\
-    & Decision Tree & 0.xxxx & 0.xxxx & 0.xxxx & 0.xxxx \\
-    & Linear Reg.   & 0.xxxx & 0.xxxx & 0.xxxx & 0.xxxx \\
+    \multirow{2}{*}{ICP}
+      & Logistic Reg. & 0.626 & 0.625 & 0.141 & 0.230 \\
+      & Decision Tree & 0.503 & 0.390 & 0.451 & 0.418 \\
     \midrule
-    \multirow{3}{*}{solana}
-    & Logistic Reg. & 0.xxxx & 0.xxxx & 0.xxxx & 0.xxxx \\
-    & Decision Tree & 0.xxxx & 0.xxxx & 0.xxxx & 0.xxxx \\
-    & Linear Reg.   & 0.xxxx & 0.xxxx & 0.xxxx & 0.xxxx \\
+    \multirow{2}{*}{XRP}
+      & Logistic Reg. & 0.397 & 0.372 & 0.786 & 0.505 \\
+      & Decision Tree & 0.436 & 0.358 & 0.557 & 0.436 \\
     \bottomrule
   \end{tabular}
 \end{table}
 
-\noindent\textit{Note: Results for BNB, XRP, and ICP follow the same format. Replace \texttt{0.xxxx} with actual values before submission.}
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\linewidth]{../images/model_results.png}
+  \caption{Test-set scores per coin and model. The red dashed line marks the 0.50 random baseline.
+           The grey dotted line marks the 0.58 ACF-derived ceiling.}
+  \label{fig:model-results}
+\end{figure}
 
-\subsection{Interpretation of Results}
+\textbf{RQ2.}
+All accuracy values lie between 40 and 63\,\%, consistent with the ceiling established by the ACF
+analysis. This confirms that yesterday's market indicators are insufficient for reliable
+next-day price direction prediction.
 
-% TODO: fill in after running src/models.py
-Preliminary results suggest that all three models achieve accuracy in the range of 50--55\,\% across most coins, which is close to the theoretical baseline of a random classifier ($\approx 50\%$).
-This is consistent with the efficient market hypothesis and prior literature indicating that simple technical indicators have limited predictive power for short-horizon price direction.
-
-Key observations:
-\begin{itemize}[itemsep=0pt,topsep=4pt]
-  \item \textbf{Logistic Regression} serves as a stable linear baseline, generally outperforming or matching the other models.
-  \item \textbf{Decision Tree} (unpruned, default depth) may overfit on the training set, leading to lower test accuracy than Logistic Regression.
-  \item \textbf{Linear Regression} used as a classifier (thresholded at 0.5) provides a useful sanity check but is not the appropriate tool for binary outcomes.
-\end{itemize}
-
-\subsection{Design Decisions Revisited}
-
-The three most consequential design choices in this pipeline were:
-
-\begin{enumerate}[leftmargin=1.5em,itemsep=2pt]
-  \item \textbf{No shuffling of time-series data.} Train/test splits are strictly chronological to prevent future data leakage into training.
-  \item \textbf{Per-coin feature grouping.} Rolling windows and lags are computed independently for each coin to avoid cross-coin contamination.
-  \item \textbf{Outliers flagged, not dropped.} Extreme price events carry real market information; the \texttt{is\_outlier} flag preserves them while giving analysts control.
-\end{enumerate}
+\textbf{RQ3.}
+Neither model consistently outperforms the other across all three coins.
+Logistic Regression is marginally more stable.
+The ICP accuracy of 62.6\,\% for Logistic Regression appears high but is undermined by a recall of
+only 14.1\,\%, revealing that the model almost exclusively predicts the majority class rather than
+learning a genuine signal.
+The Decision Tree gains no benefit from its higher capacity, confirming that the data lacks the
+non-linear structure required to justify a more complex model.

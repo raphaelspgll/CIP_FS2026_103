@@ -1,16 +1,37 @@
 \section{Conclusion}
 
-\subsection{Limitations}
+\subsection*{Summary and Learnings}
 
-\begin{itemize}[itemsep=0pt,topsep=4pt]
-  \item The feature set is limited to price-derived technical indicators; sentiment data, on-chain metrics, and macro variables are not included.
-  \item CoinGecko does not expose intra-day open prices, so \texttt{price\_change\_pct} is always recomputed as a day-over-day return rather than an intra-day figure.
-  \item The Decision Tree is not tuned; hyperparameter search (e.g.\ max depth, min samples) could improve performance and reduce overfitting.
+This project built a reproducible end-to-end pipeline from raw web scraping to binary classification
+for cryptocurrency price-direction prediction.
+The central finding is that publicly available daily market indicators have very limited predictive
+power for next-day price direction.
+Test-set accuracy for both models and all three coins is consistent with random-walk behaviour and
+aligns with the theoretical ceiling derived from the ACF analysis.
+
+Three methodological lessons stood out.
+First, stationarity matters. Including non-stationary level features such as moving averages and
+market capitalisation introduced spurious correlations that would have inflated reported performance.
+Second, data leakage is easy to introduce in time-series settings. Initial experiments with unlagged
+features produced 100\,\% Decision Tree accuracy, which immediately revealed the error.
+Third, the EDA correctly predicted the performance range before any model was trained, demonstrating
+that thorough exploratory analysis is a prerequisite for trustworthy modelling.
+
+\subsection*{Limitations}
+
+\begin{itemize}[itemsep=0pt,topsep=3pt]
+  \item The feature set is limited to price-derived technical indicators. Sentiment data, on-chain
+        metrics, and macroeconomic variables are excluded.
+  \item Only two classifiers are evaluated. Ensemble methods such as Random Forest may offer marginal
+        improvements without additional data.
+  \item The Decision Tree is not hyperparameter-tuned. Pruning could reduce the gap between
+        validation and test performance.
 \end{itemize}
 
-\subsection{Summary}
+\subsection*{Outlook}
 
-This project demonstrates a reproducible end-to-end pipeline for cryptocurrency price-direction prediction, from web scraping through preprocessing, feature engineering, and classification.
-Although the achieved accuracy is modest, the pipeline is methodologically sound — chronological splits, lag-correct features, and transparent imputation flags ensure that the results reflect genuine out-of-sample performance.
-
-Future work could extend the feature set with sentiment signals, experiment with ensemble methods, or explore longer prediction horizons to see whether predictability increases over multi-day windows.
+Future work could enrich the feature set with news sentiment or social media signals, apply
+TimeSeriesSplit cross-validation for more robust model selection, or investigate whether
+predictability increases over multi-day prediction horizons.
+Extending the pipeline to additional coins would allow broader generalisations about market
+efficiency across different asset classes.

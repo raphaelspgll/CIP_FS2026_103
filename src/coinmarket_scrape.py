@@ -1,3 +1,13 @@
+"""
+coinmarket_scrape.py
+Scrapes historical OHLCV data for Bitcoin, XRP, and ICP from CoinMarketCap.
+
+For each coin the scraper navigates to the historical-data page using a
+Playwright-driven headless Chromium browser, repeatedly clicks "Load More"
+until at least three years of data are loaded, then extracts all table rows
+and saves them as a cleaned CSV to data/raw/.
+"""
+
 from playwright.sync_api import sync_playwright
 import pandas as pd
 import os
@@ -14,7 +24,21 @@ coins = [
 
 target_date = datetime.now() - timedelta(days=3 * 365)
 
-def scrape_coin(page, coin_slug):
+
+def scrape_coin(page, coin_slug: str) -> list:
+    """Navigate to a CoinMarketCap historical-data page and extract all OHLCV rows.
+
+    Scrolls back in time by repeatedly clicking the "Load More" button until the
+    oldest visible row is at least three years old, then reads every table row.
+
+    Args:
+        page:      Playwright Page object with an open browser context.
+        coin_slug: CoinMarketCap URL slug for the coin (e.g. "bitcoin", "xrp").
+
+    Returns:
+        List of rows, where each row is a list of raw cell strings in the order
+        [date, open, high, low, close, volume, market_cap].
+    """
     page.goto(f"https://coinmarketcap.com/currencies/{coin_slug}/historical-data/")
     page.wait_for_timeout(5000)
 
@@ -33,7 +57,7 @@ def scrape_coin(page, coin_slug):
             page.locator("text=Load More").click()
             page.wait_for_timeout(2000)
         except:
-            print(f"[{coin_slug}] The “Load More” button is no longer found")
+            print(f"[{coin_slug}] The \"Load More\" button is no longer found")
             break
 
     rows = page.query_selector_all("tbody tr")
@@ -44,6 +68,7 @@ def scrape_coin(page, coin_slug):
             data.append([cell.inner_text() for cell in cells])
 
     return data
+
 
 with sync_playwright() as p:
     browser = p.chromium.launch(headless=False)

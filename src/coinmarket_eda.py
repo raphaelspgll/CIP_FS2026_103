@@ -10,7 +10,7 @@ Research questions:
 This script:
 - Loads historical OHLCV data for Bitcoin, XRP, and ICP
 - Runs a data quality check
-- Engineers log-transformed features for correlation analysis and ML
+- Engineers log-transformed features via features.engineer_all() for correlation analysis and ML
 - Checks stationarity and uses only stationary features for lag-1 analysis
 - Produces distribution, correlation, autocorrelation, cross-asset, and
   volatility plots saved to images/
@@ -23,6 +23,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
+
+from features import engineer_all, FEATURE_COLS as LAG_FEATURE_COLS, MA_SHORT, MA_LONG
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -48,10 +50,6 @@ COINS = {
 # Consistent brand colors used across all multi-coin plots
 COLORS = {"Bitcoin": "#F7931A", "XRP": "#346AA9", "ICP": "#29ABE2"}
 
-# Moving average window lengths (days)
-MA_SHORT = 7
-MA_LONG  = 30
-
 # All log-transformed features — used for the general correlation heatmap.
 # Includes non-stationary level features (log_close, ma_7, ma_30, etc.)
 # which are informative for pairwise feature relationships.
@@ -61,13 +59,8 @@ FEATURE_COLS = [
     "ma_7", "ma_30", "volatility_7", "log_volume_change",
 ]
 
-# Stationary-only features — used for the lag-1 analysis.
-# Non-stationary features (log_close, ma_7, ma_30, log_volume, log_market_cap)
-# trend with price levels and produce spurious correlations with price_direction.
-LAG_FEATURE_COLS = [
-    "log_return", "log_close_open_ratio", "log_high_low_ratio",
-    "volatility_7", "log_volume_change",
-]
+# LAG_FEATURE_COLS (5 stationary predictors) and MA_SHORT/MA_LONG are
+# imported from features.py, which is the single source of truth for these.
 
 sns.set_theme(style="whitegrid")
 
@@ -186,77 +179,7 @@ def data_overview(datasets: dict) -> None:
 
 
 # ---------------------------------------------------------------------------
-# 3. Feature engineering
-# ---------------------------------------------------------------------------
-
-def engineer_features(datasets: dict) -> dict:
-    """Compute log-transformed indicators and the ML target variable for each coin.
-
-    All derived features use logarithmic scaling, which is methodologically
-    appropriate for crypto data: prices follow log-normal distributions, log
-    returns are symmetric and additive over time, and log-transforming volume/
-    market cap removes scale dominance in cross-coin correlation analysis.
-
-    New columns added:
-        log_close            : log(close) — log price level
-        log_volume           : log(volume) — log volume
-        log_market_cap       : log(market_cap) — log market cap
-        log_return           : log(close_t / close_{t-1}) — daily log return
-        log_close_open_ratio : log(close / open) — positive on bullish days
-        log_high_low_ratio   : log(high / low) — intraday range, always >= 0
-        ma_7                 : MA_SHORT-day rolling mean of log_close
-        ma_30                : MA_LONG-day rolling mean of log_close
-        volatility_7         : MA_SHORT-day rolling std of log_return
-        log_volume_change    : log(volume_t / volume_{t-1}) — log volume change
-        price_direction      : 1 if close > open (bullish), else 0 -- ML target
-
-    Raw OHLCV columns are kept for the quality check and for price_direction.
-    NaN rows from rolling windows are kept so time-series plots span the full range.
-
-    Args:
-        datasets: Dictionary mapping coin name to its raw DataFrame.
-
-    Returns:
-        Dictionary mapping coin name to enriched DataFrames (copies).
-        Feature CSVs are also saved to data_processed/.
-    """
-    enriched = {}
-    for coin, df in datasets.items():
-        df = df.copy().sort_values("date").reset_index(drop=True)
-
-        # Log-transformed price and market features (non-stationary level features)
-        df["log_close"]            = np.log(df["close"])
-        df["log_volume"]           = np.log(df["volume"])
-        df["log_market_cap"]       = np.log(df["market_cap"])
-
-        # Log return: log(P_t / P_{t-1}) — stationary, preferred over pct_change
-        df["log_return"]           = np.log(df["close"] / df["close"].shift(1))
-
-        # Intraday log ratios (stationary and scale-invariant)
-        df["log_close_open_ratio"] = np.log(df["close"] / df["open"])
-        df["log_high_low_ratio"]   = np.log(df["high"] / df["low"])
-
-        # Rolling indicators on log-transformed series
-        df["ma_7"]                 = df["log_close"].rolling(window=MA_SHORT).mean()
-        df["ma_30"]                = df["log_close"].rolling(window=MA_LONG).mean()
-        df["volatility_7"]         = df["log_return"].rolling(window=MA_SHORT).std()
-        df["log_volume_change"]    = np.log(df["volume"] / df["volume"].shift(1))
-
-        # Binary ML target: 1 = bullish day (close > open), 0 = bearish/flat
-        df["price_direction"]      = (df["close"] > df["open"]).astype(int)
-
-        # Save enriched data for downstream ML script
-        out_name = coin.lower().replace(" ", "_") + "_features.csv"
-        out_path = os.path.join(PROCESSED_DIR, out_name)
-        df.to_csv(out_path, index=False)
-        print(f"Saved: {out_path}")
-
-        enriched[coin] = df
-    return enriched
-
-
-# ---------------------------------------------------------------------------
-# 4. Stationarity check
+# 3. Stationarity check
 # ---------------------------------------------------------------------------
 
 def analyze_stationarity(datasets: dict) -> None:
@@ -664,7 +587,7 @@ def main() -> None:
     data_overview(raw)
 
     print("\nEngineering features...")
-    enriched = engineer_features(raw)
+    enriched = engineer_all(raw, PROCESSED_DIR)
 
     print("\nChecking stationarity...")
     analyze_stationarity(enriched)

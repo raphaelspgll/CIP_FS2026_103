@@ -4,40 +4,27 @@
 \providecommand\HyField@AuxAddToCoFields[2]{}
 \@writefile{toc}{\contentsline {section}{\numberline {1}Introduction}{2}{section.1}\protected@file@percent }
 \@writefile{toc}{\contentsline {section}{\numberline {2}Methods}{2}{section.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {2.1}Data Sources \& Acquisition}{2}{subsection.2.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.1.1}Data Source}{2}{subsubsection.2.1.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.1.2}Scraper Architecture}{2}{subsubsection.2.1.2}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {1}{\ignorespaces Scrapy / Playwright configuration.}}{2}{table.caption.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.1}Data Source and Collection}{2}{subsection.2.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.2}Preprocessing and Feature Engineering}{2}{subsection.2.2}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {1}{\ignorespaces Feature set used for modelling (all values from day $t-1$).}}{2}{table.caption.1}\protected@file@percent }
 \providecommand*\caption@xref[2]{\@setref\relax\@undefined{#1}}
-\newlabel{tab:scraper-config}{{1}{2}{Scrapy / Playwright configuration}{table.caption.1}{}}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.1.3}Parsing Logic}{2}{subsubsection.2.1.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.1.4}Raw Data Schema}{2}{subsubsection.2.1.4}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {2}{\ignorespaces Raw data schema (\texttt  {data/raw/\{coin\_id\}.csv}).}}{3}{table.caption.2}\protected@file@percent }
-\newlabel{tab:raw-schema}{{2}{3}{Raw data schema (\texttt {data/raw/\{coin\_id\}.csv})}{table.caption.2}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {2.2}Data Preprocessing}{3}{subsection.2.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.2.1}Overview}{3}{subsubsection.2.2.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.2.2}Processing Steps}{3}{subsubsection.2.2.2}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {3}{\ignorespaces Missing value handling strategy.}}{3}{table.caption.3}\protected@file@percent }
-\newlabel{tab:missing}{{3}{3}{Missing value handling strategy}{table.caption.3}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {2.3}Feature Engineering}{4}{subsection.2.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.3.1}Overview}{4}{subsubsection.2.3.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.3.2}Computed Features}{4}{subsubsection.2.3.2}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {4}{\ignorespaces Engineered features and lag status.}}{4}{table.caption.4}\protected@file@percent }
-\newlabel{tab:features}{{4}{4}{Engineered features and lag status}{table.caption.4}{}}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.3.3}Lag Semantics}{4}{subsubsection.2.3.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {2.4}Models}{4}{subsection.2.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.4.1}Task \& Split Strategy}{4}{subsubsection.2.4.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.4.2}Model Descriptions}{4}{subsubsection.2.4.2}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {5}{\ignorespaces Models evaluated.}}{4}{table.caption.5}\protected@file@percent }
-\newlabel{tab:models}{{5}{4}{Models evaluated}{table.caption.5}{}}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.4.3}Evaluation Metrics}{5}{subsubsection.2.4.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {3}Discussion}{5}{section.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.1}Results}{5}{subsection.3.1}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {6}{\ignorespaces Model evaluation results (placeholder — fill with output from \texttt  {src/models.py}).}}{5}{table.caption.6}\protected@file@percent }
-\newlabel{tab:results}{{6}{5}{Model evaluation results (placeholder — fill with output from \texttt {src/models.py})}{table.caption.6}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.2}Interpretation of Results}{5}{subsection.3.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.3}Design Decisions Revisited}{5}{subsection.3.3}\protected@file@percent }
+\newlabel{tab:features}{{1}{2}{Feature set used for modelling (all values from day $t-1$)}{table.caption.1}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.3}Analysis Methods}{3}{subsection.2.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {3}Discussion}{3}{section.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.1}RQ1 — Which Indicators Relate Most Strongly to Price Changes?}{3}{subsection.3.1}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces Lag-1 Pearson correlation between each feature at $t-1$ and \texttt  {price\_direction} at $t$ for Bitcoin (left), XRP (centre), and ICP (right). Bars marked with * ($p < 0.05$) or ** ($p < 0.01$) are statistically significant. All magnitudes are small, confirming weak predictive power across all features and coins.}}{3}{figure.caption.2}\protected@file@percent }
+\newlabel{fig:lag1}{{1}{3}{Lag-1 Pearson correlation between each feature at $t-1$ and \texttt {price\_direction} at $t$ for Bitcoin (left), XRP (centre), and ICP (right). Bars marked with * ($p < 0.05$) or ** ($p < 0.01$) are statistically significant. All magnitudes are small, confirming weak predictive power across all features and coins}{figure.caption.2}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.2}RQ2 — How Accurately Can Indicators Predict Price Direction?}{3}{subsection.3.2}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces ACF of daily log returns for Bitcoin (left), XRP (centre), and ICP (right), lags 1 to 20. Dashed lines mark the 95\,\% confidence band ($\pm 0.057$). Nearly all coefficients fall within the band, confirming near-random walk behaviour. XRP shows a slightly negative lag-1 coefficient, consistent with the mean-reversion signal in Figure~\ref {fig:lag1}.}}{4}{figure.caption.3}\protected@file@percent }
+\newlabel{fig:acf}{{2}{4}{ACF of daily log returns for Bitcoin (left), XRP (centre), and ICP (right), lags 1 to 20. Dashed lines mark the 95\,\% confidence band ($\pm 0.057$). Nearly all coefficients fall within the band, confirming near-random walk behaviour. XRP shows a slightly negative lag-1 coefficient, consistent with the mean-reversion signal in Figure~\ref {fig:lag1}}{figure.caption.3}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces 30-day rolling standard deviation of log returns for all three coins. Volatility clustering and distinct market regimes are visible. ICP consistently exhibits the highest volatility throughout the period.}}{4}{figure.caption.4}\protected@file@percent }
+\newlabel{fig:volatility}{{3}{4}{30-day rolling standard deviation of log returns for all three coins. Volatility clustering and distinct market regimes are visible. ICP consistently exhibits the highest volatility throughout the period}{figure.caption.4}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces Cross-asset log return correlation heatmap (Pearson $r$). Co-movement is present but substantial coin-specific variance justifies separate models per coin.}}{5}{figure.caption.5}\protected@file@percent }
+\newlabel{fig:cross-asset}{{4}{5}{Cross-asset log return correlation heatmap (Pearson $r$). Co-movement is present but substantial coin-specific variance justifies separate models per coin}{figure.caption.5}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.3}RQ2 \& RQ3 — Model Evaluation and Model Comparison}{5}{subsection.3.3}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {2}{\ignorespaces Test-set evaluation (70/15/15 chronological split). Random baseline = 0.50. Realistic ceiling from ACF = 0.58.}}{5}{table.caption.6}\protected@file@percent }
+\newlabel{tab:results}{{2}{5}{Test-set evaluation (70/15/15 chronological split). Random baseline = 0.50. Realistic ceiling from ACF = 0.58}{table.caption.6}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {5}{\ignorespaces Test-set scores per coin and model. The red dashed line marks the 0.50 random baseline. The grey dotted line marks the 0.58 ACF-derived ceiling.}}{5}{figure.caption.7}\protected@file@percent }
+\newlabel{fig:model-results}{{5}{5}{Test-set scores per coin and model. The red dashed line marks the 0.50 random baseline. The grey dotted line marks the 0.58 ACF-derived ceiling}{figure.caption.7}{}}
 \@writefile{toc}{\contentsline {section}{\numberline {4}Conclusion}{6}{section.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.1}Limitations}{6}{subsection.4.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.2}Summary}{6}{subsection.4.2}\protected@file@percent }
 \gdef \@abspage@last{6}
