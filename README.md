@@ -139,39 +139,35 @@ Other implementations and intermediate work remain available in their respective
 ```mermaid
 flowchart TD
 
-    A[Team of 3 Members]
+A[Team of 3 Members]
 
-    subgraph S[Phase 1: Data Acquisition]
-        B1[feature/coinmarket]
-        B2[feature/coingecko]
-        B3[feature/binance]
-    end
+subgraph S[Phase 1: Data Acquisition]
+    B1[feature/coinmarket]
+    B2[feature/coingecko]
+    B3[feature/binance]
+end
 
-    subgraph M[Phase 2: Modelling & Visualisation]
-        C1[feature/xrp]
-        C2[feature/icp]
-        C3[feature/bitcoin]
-    end
+subgraph M[Phase 2: Modelling & Visualisation]
+    C1[feature/xrp]
+    C2[feature/icp]
+    C3[feature/bitcoin]
+end
 
-    subgraph F[Phase 3: Final Pipeline Generalisation]
-        D[main]
-        E[BTC · ICP · XRP]
-    end
+subgraph F[Phase 3: Final Pipeline Generalisation]
+    D[main]
+    E[BTC, ICP, XRP]
+end
 
-    A -->|scrape + clean| B1
-    A -->|scrape + clean| B2
-    A -->|scrape + clean| B3
+A -->|scrape + clean| B1
+A -->|scrape + clean| B2
+A -->|scrape + clean| B3
 
-    B1 -->|model XRP| C1
-    B2 -->|model ICP| C2
-    B3 -->|model BTC| C3
+B1 -->|model XRP| C1
+B2 -->|model ICP| C2
+B3 -->|model BTC| C3
 
-    C1 -->|selected pipeline| D
-    D -->|applied to all coins| E
-
-    style B1 stroke-width:3px
-    style C1 stroke-width:3px
-    style D stroke-width:3px
+C1 -->|selected pipeline| D
+D -->|applied to all coins| E
 ```
 ## Authors
 
