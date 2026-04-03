@@ -173,10 +173,6 @@ flowchart TD
     style C1 stroke-width:3px
     style D stroke-width:3px
 ```
-
-### Individual Contributions
-(list)
-
 ## Authors
 
 Lemma Emanuel · Spagolla Raphaël · Krishnathasan Tharrmeehan
