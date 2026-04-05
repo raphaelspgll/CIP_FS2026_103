@@ -103,10 +103,7 @@ CIP_FS2026_103/
 ├── docs/          # reports, feasibility study, documentation
 ├── images/        # EDA and model result plots
 ├── latex/         # LaTeX report source
-├── notebooks/     # exploratory analysis (EDA)
-├── scraper/       # web scraping scripts (Playwright)
 ├── src/           # core logic (scraper, features, models)
-├── tests/         # testing code
 └── .venv/         # virtual environment (not tracked)
 ```
 
