@@ -145,8 +145,8 @@ subgraph S[Phase 1: Data Acquisition]
 end
 
 subgraph M[Phase 2: Modelling & Visualisation]
-    C1[feature/icp]
-    C2[feature/xrp]
+    C1[feature/xrp]
+    C2[feature/icp]
     C3[feature/bitcoin]
 end
 
@@ -155,13 +155,13 @@ subgraph F[Phase 3: Final Pipeline Generalisation]
     E[BTC, ICP, XRP]
 end
 
-A -->|scrape + clean| B1
-A -->|scrape + clean| B2
-A -->|scrape + clean| B3
+A -->|Member 1: scrape + clean| B1
+A -->|Member 2: scrape + clean| B2
+A -->|Member 3: scrape + clean| B3
 
-B1 -->|model ICP| C1
-B2 -->|model XRP| C2
-B3 -->|model BTC| C3
+B1 -->|Member 1: model XRP| C1
+B1 -->|Member 2: model ICP| C2
+B1 -->|Member 3: model BTC| C3
 
 C1 -->|selected pipeline| D
 D -->|applied to all coins| E
