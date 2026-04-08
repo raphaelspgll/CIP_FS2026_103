@@ -168,5 +168,8 @@ D -->|applied to all coins| E
 ```
 ## Authors
 
-Lemma Emanuel · Spagolla Raphaël · Krishnathasan Tharrmeehan
-Hochschule Luzern (HSLU) — MSc Applied Information and Data Science
+Krishnathasan Tharrmeehan
+Lemma Emanuel
+Spagolla Raphaël 
+Hochschule Luzern (HSLU)
+MSc Applied Information and Data Science
