@@ -166,6 +166,9 @@ B1 -->|Member 3: model BTC| C3
 C1 -->|selected pipeline| D
 D -->|applied to all coins| E
 ```
+## AI Disclosure
+
+The AI disclosure for this project is located in the docs folder. Please refer to that directory for detailed information regarding the use of AI within this project.
 ## Authors
 
 Krishnathasan Tharrmeehan  
