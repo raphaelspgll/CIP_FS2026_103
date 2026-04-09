@@ -103,10 +103,7 @@ CIP_FS2026_103/
 ├── docs/          # reports, feasibility study, documentation
 ├── images/        # EDA and model result plots
 ├── latex/         # LaTeX report source
-├── notebooks/     # exploratory analysis (EDA)
-├── scraper/       # web scraping scripts (Playwright)
 ├── src/           # core logic (scraper, features, models)
-├── tests/         # testing code
 └── .venv/         # virtual environment (not tracked)
 ```
 
@@ -120,7 +117,60 @@ CIP_FS2026_103/
 - Matplotlib 3.10.8, Seaborn 0.13.2
 
 
+## Collaboration & Repository Workflow
+
+### Parallel Development
+
+The project followed a parallel workflow in which each team member independently built a complete pipeline. Each member collected data for three cryptocurrencies using their own scraping approach, then selected one coin to perform data preprocessing, feature engineering, modelling, and visualization.
+
+This approach enabled multiple implementations and modelling strategies to be developed simultaneously while ensuring that all core project components were covered individually
+
+### Final Integration
+
+The main branch contains a single finalized end-to-end pipeline. This implementation was selected from the individual contributions because it was the most complete, clean, and well-structured at the time of consolidation.
+
+Other implementations and intermediate work remain available in their respective branches.
+
+### Workflow Diagram
+
+```mermaid
+flowchart TD
+
+A[Team of 3 Members]
+
+subgraph S[Phase 1: Data Acquisition]
+    B1[feature/coinmarket]
+    B2[feature/coingecko]
+    B3[feature/binance]
+end
+
+subgraph M[Phase 2: Modelling & Visualisation]
+    C1[feature/xrp]
+    C2[feature/icp]
+    C3[feature/bitcoin]
+end
+
+subgraph F[Phase 3: Final Pipeline Generalisation]
+    D[main]
+    E[BTC, ICP, XRP]
+end
+
+A -->|Member 1: scrape + clean| B1
+A -->|Member 2: scrape + clean| B2
+A -->|Member 3: scrape + clean| B3
+
+B1 -->|Member 1: model XRP| C1
+B1 -->|Member 2: model ICP| C2
+B1 -->|Member 3: model BTC| C3
+
+C1 -->|selected pipeline| D
+D -->|applied to all coins| E
+```
 ## Authors
 
-Lemma Emanuel · Spagolla Raphaël · Krishnathasan Tharrmeehan
-Hochschule Luzern (HSLU) — MSc Applied Information and Data Science
+Krishnathasan Tharrmeehan  
+Lemma Emanuel  
+Spagolla Raphaël  
+
+Hochschule Luzern (HSLU)  
+MSc Applied Information and Data Science
